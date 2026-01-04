@@ -118,6 +118,10 @@ th,td{
   border-bottom:1px solid var(--army);
   padding:8px;
 }
+
+.back-btn{
+  margin-top:10px;
+}
 </style>
 </head>
 
@@ -127,8 +131,9 @@ th,td{
   <h1>StegoPrints</h1>
   <div id="accountBox" class="hidden">
     <span id="userLabel"></span>
+    <button onclick="show('modelsPage')">🏠 Home</button>
+    <button id="notifyBtn" onclick="show('notificationsPage')">🔔 Notifications</button>
     <button onclick="logout()">Logout</button>
-    <button onclick="show('notificationsPage')">🔔</button>
   </div>
 </header>
 
@@ -160,7 +165,7 @@ th,td{
 
 <div class="card small-card">
 <h3>Premium Account – $2</h3>
-<p>Unlock premium upgrades</p>
+<p>Unlock premium upgrades & special build requests</p>
 <button onclick="buyPremium()">Buy Premium</button>
 </div>
 </div>
@@ -192,13 +197,15 @@ th,td{
 </select>
 
 <textarea id="special" placeholder="Special Request"></textarea>
-<textarea id="customBuild" placeholder="Request Custom Build"></textarea>
 </div>
+
+<p>Total Cost: $<span id="totalCost">0.00</span></p>
 
 <button onclick="placeOrder()">Place Order</button>
 <p class="notice hidden" id="orderNotice">
 ✅ Order placed! Printing will begin once payment is received.
 </p>
+<button class="back-btn" onclick="show('modelsPage')">Back to Home</button>
 </div>
 </div>
 
@@ -206,6 +213,7 @@ th,td{
 <div id="notificationsPage" class="hidden">
 <h2 style="text-align:center">Notifications</h2>
 <div id="notifications"></div>
+<button class="back-btn" onclick="show('modelsPage')">Back to Home</button>
 </div>
 
 <!-- ADMIN -->
@@ -258,6 +266,7 @@ function logout(){localStorage.removeItem("current");location.reload();}
 function init(){
 show("modelsPage");
 accountBox.classList.remove("hidden");
+notifyBtn.style.display="inline";
 userLabel.textContent="👤 "+localStorage.current;
 loadProducts();
 }
@@ -280,16 +289,26 @@ size.innerHTML="";
 for(let s in products[p]){
 size.innerHTML+=`<option>${s} – $${products[p][s]}</option>`;
 }
+updateTotal();
 let users=JSON.parse(localStorage.users||"{}");
 premiumSection.classList.toggle("locked",!users[localStorage.current].premium);
 show("customizePage");
 }
 
+/* ---------- TOTAL COST ---------- */
+function updateTotal(){
+let prod=localStorage.product;
+let s=size.value.split(" – ")[0];
+let cost=products[prod]?[s]?products[prod][s]:0:0;
+totalCost.textContent=cost.toFixed(2);
+}
+size.addEventListener("change",updateTotal);
+
 /* ---------- ORDERS ---------- */
 function placeOrder(){
 let users=JSON.parse(localStorage.users||"{}");
 let u=users[localStorage.current];
-if(!u.premium && (premiumUpgrade.value!=="none"||special.value||customBuild.value))
+if(!u.premium && (premiumUpgrade.value!=="none"||special.value))
 return alert("Premium required");
 
 let orders=JSON.parse(localStorage.orders||"[]");
@@ -301,11 +320,20 @@ color:color.value,
 qty:qty.value,
 premium:premiumUpgrade.value,
 special:special.value,
-customBuild:customBuild.value,
 time:new Date().toLocaleString()
 });
 localStorage.orders=JSON.stringify(orders);
 orderNotice.classList.remove("hidden");
+
+// send notifications
+setTimeout(()=>{
+let n=JSON.parse(localStorage.notifications||"{}");
+n[localStorage.current]=n[localStorage.current]||[];
+n[localStorage.current].push(
+`Your order for ${localStorage.product} will start printing. Estimated delivery: ${(new Date(Date.now()+5*24*60*60*1000)).toLocaleDateString()}`
+);
+localStorage.notifications=JSON.stringify(n);
+},1000);
 }
 
 /* ---------- PREMIUM ---------- */
@@ -313,7 +341,12 @@ function buyPremium(){
 let orders=JSON.parse(localStorage.orders||"[]");
 orders.push({user:localStorage.current,product:"Premium Account",price:2,time:new Date().toLocaleString()});
 localStorage.orders=JSON.stringify(orders);
-alert("Premium order placed");
+
+let users=JSON.parse(localStorage.users||"{}");
+users[localStorage.current].premium=true;
+localStorage.users=JSON.stringify(users);
+alert("Premium account purchased!");
+init();
 }
 
 /* ---------- NOTIFICATIONS ---------- */
