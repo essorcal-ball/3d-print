@@ -5,7 +5,7 @@ const path = require("path");
 
 const app = express();
 app.use(bodyParser.json());
-app.use(express.static(".")); // serve index.html and images
+app.use(express.static(".")); // serve index.html + images
 
 const DATA_FILE = "./data.json";
 
