@@ -1,24 +1,37 @@
-const express = require("express");
-const bodyParser = require("body-parser");
-const fs = require("fs");
-const path = require("path");
+import express from "express";
+import bodyParser from "body-parser";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const app = express();
 app.use(bodyParser.json());
-app.use(express.static(".")); // serve index.html + images
 
-const DATA_FILE = "./data.json";
+// Node ESM __dirname fix
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// Load or initialize data
+// Serve static files (index.html, images, CSS)
+app.use(express.static(__dirname));
+
+// ---------- DATA ----------
+const DATA_FILE = path.join(__dirname, "data.json");
+
 function loadData() {
   if (!fs.existsSync(DATA_FILE)) {
-    fs.writeFileSync(DATA_FILE, JSON.stringify({ users: {}, orders: [], notifications: [] }, null, 2));
+    fs.writeFileSync(
+      DATA_FILE,
+      JSON.stringify({ users: {}, orders: [], notifications: [] }, null, 2)
+    );
   }
   return JSON.parse(fs.readFileSync(DATA_FILE));
 }
-function saveData(data) { fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2)); }
 
-// Products
+function saveData(data) {
+  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+}
+
+// ---------- PRODUCTS ----------
 const products = {
   "Spiral Fidget": { Small: 2, Medium: 3.5, Large: 5 },
   "Articulated Octopus": { Small: 2.5, Medium: 4, Large: 6 },
@@ -114,10 +127,9 @@ app.get("/api/notifications/:username", (req, res) => {
   res.json(data.notifications.filter(n => n.username === req.params.username));
 });
 
-// Serve frontend
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
-});
+// Serve index.html
+app.get("/", (req, res) => res.sendFile(path.join(__dirname, "index.html")));
 
+// ---------- START SERVER ----------
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
