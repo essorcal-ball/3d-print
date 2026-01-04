@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <title>StegoPrints</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <style>
 :root{
   --black:#050505;
@@ -13,118 +12,25 @@
   --orange:#ff8c00;
   --light:#e5e7eb;
 }
-
-body{
-  margin:0;
-  font-family:Arial,Helvetica,sans-serif;
-  background:linear-gradient(160deg,var(--black),#0b1a12);
-  color:var(--light);
-}
-
-.hidden{display:none}
-
-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:14px 22px;
-  background:linear-gradient(90deg,var(--army),var(--black));
-}
-
-header h1{margin:0;color:var(--orange)}
-
-#accountBox{
-  display:flex;
-  gap:12px;
-  align-items:center;
-}
-
-button{
-  background:linear-gradient(135deg,var(--orange),#ffae42);
-  border:none;
-  border-radius:10px;
-  padding:8px 12px;
-  font-weight:bold;
-  cursor:pointer;
-}
-
-.card{
-  background:rgba(0,0,0,.75);
-  border:2px solid var(--army);
-  border-radius:16px;
-  padding:18px;
-  width:280px;
-  margin:16px auto;
-}
-
-.small-card{width:220px}
-
-input,select,textarea{
-  width:100%;
-  margin:6px 0;
-  padding:8px;
-  border-radius:8px;
-  background:#0b1a12;
-  color:var(--light);
-  border:2px solid var(--army);
-}
-
-select{
-  appearance:none;
-  background-image:
-   linear-gradient(45deg,transparent 50%,var(--orange) 50%),
-   linear-gradient(135deg,var(--orange) 50%,transparent 50%);
-  background-position:calc(100% - 18px) calc(1em),
-                      calc(100% - 13px) calc(1em);
-  background-size:5px 5px;
-  background-repeat:no-repeat;
-}
-
-.locked{
-  opacity:.45;
-  pointer-events:none;
-  position:relative;
-}
-
-.locked::after{
-  content:"🔒";
-  position:absolute;
-  top:8px;
-  right:10px;
-  font-size:20px;
-}
-
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,220px);
-  gap:14px;
-  padding:20px;
-  justify-content:center;
-}
-
-.notice{
-  text-align:center;
-  color:var(--orange);
-  margin-top:12px;
-}
-
-table{
-  width:95%;
-  margin:auto;
-  border-collapse:collapse;
-}
-
-th,td{
-  border-bottom:1px solid var(--army);
-  padding:8px;
-}
-
-.back-btn{
-  margin-top:10px;
-}
+body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(160deg,var(--black),#0b1a12);color:var(--light);}
+.hidden{display:none;}
+header{display:flex;justify-content:space-between;align-items:center;padding:14px 22px;background:linear-gradient(90deg,var(--army),var(--black));}
+header h1{margin:0;color:var(--orange);}
+#accountBox{display:flex;gap:12px;align-items:center;}
+button{background:linear-gradient(135deg,var(--orange),#ffae42);border:none;border-radius:10px;padding:8px 12px;font-weight:bold;cursor:pointer;}
+.card{background:rgba(0,0,0,.75);border:2px solid var(--army);border-radius:16px;padding:18px;width:280px;margin:16px auto;}
+.small-card{width:220px;}
+input,select,textarea{width:100%;margin:6px 0;padding:8px;border-radius:8px;background:#0b1a12;color:var(--light);border:2px solid var(--army);}
+select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--orange) 50%),linear-gradient(135deg,var(--orange) 50%,transparent 50%);background-position:calc(100% - 18px) calc(1em),calc(100% - 13px) calc(1em);background-size:5px 5px;background-repeat:no-repeat;}
+.locked{opacity:.45;pointer-events:none;position:relative;}
+.locked::after{content:"🔒";position:absolute;top:8px;right:10px;font-size:20px;}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,220px);gap:14px;padding:20px;justify-content:center;}
+.notice{text-align:center;color:var(--orange);margin-top:12px;}
+table{width:95%;margin:auto;border-collapse:collapse;table-layout:fixed;text-align:center;}
+th,td{border-bottom:1px solid var(--army);padding:8px;}
+.back-btn{margin-top:10px;}
 </style>
 </head>
-
 <body>
 
 <header>
@@ -140,43 +46,35 @@ th,td{
 <!-- LOGIN -->
 <div id="loginPage" class="card">
 <h2>Login / Sign Up</h2>
+<p style="color:var(--orange);font-weight:bold;">⚠ Enter your real name for delivery!</p>
+<input id="realName" placeholder="Full Real Name (required)">
 <input id="username" placeholder="Username (required)">
 <input id="email" placeholder="Email (optional)">
 <input id="password" type="password" placeholder="Password">
 <button onclick="signup()">Sign Up</button>
 <button onclick="login()">Login</button>
-
 <hr>
 <h3 style="color:var(--orange)">Premium Account – $2</h3>
-<p>
-✔ Two-color prints<br>
-✔ High detail<br>
-✔ Special requests<br>
-✔ Custom builds
-</p>
-<button onclick="buyPremium()">Buy Premium</button>
+<p>Unlock premium upgrades & special build requests</p>
+<button onclick="buyPremium()">Request Premium (Admin approval)</button>
 </div>
 
 <!-- MODELS -->
 <div id="modelsPage" class="hidden">
 <h2 style="text-align:center">Choose a Product</h2>
-
 <div class="grid" id="productGrid"></div>
-
 <div class="card small-card">
 <h3>Premium Account – $2</h3>
 <p>Unlock premium upgrades & special build requests</p>
-<button onclick="buyPremium()">Buy Premium</button>
+<button onclick="buyPremium()">Request Premium (Admin approval)</button>
 </div>
 </div>
 
 <!-- CUSTOMIZE -->
 <div id="customizePage" class="hidden">
 <h2 id="productTitle" style="text-align:center"></h2>
-
 <div class="card">
 <select id="size"></select>
-
 <select id="color">
 <option selected>White</option>
 <option>Army Green</option>
@@ -186,25 +84,18 @@ th,td{
 <option>Orange</option>
 <option>Red</option>
 </select>
-
 <input id="qty" type="number" min="1" value="1">
-
 <div id="premiumSection">
 <select id="premiumUpgrade">
 <option value="none">No Premium</option>
 <option value="two">Two Colors</option>
 <option value="detail">High Detail</option>
 </select>
-
 <textarea id="special" placeholder="Special Request"></textarea>
 </div>
-
 <p>Total Cost: $<span id="totalCost">0.00</span></p>
-
 <button onclick="placeOrder()">Place Order</button>
-<p class="notice hidden" id="orderNotice">
-✅ Order placed! Printing will begin once payment is received.
-</p>
+<p class="notice hidden" id="orderNotice">✅ Order placed! Notifications sent.</p>
 <button class="back-btn" onclick="show('modelsPage')">Back to Home</button>
 </div>
 </div>
@@ -219,13 +110,10 @@ th,td{
 <!-- ADMIN -->
 <div id="adminPage" class="hidden">
 <h2 style="text-align:center">Admin Panel</h2>
-
 <h3>Accounts</h3>
 <table id="accountsTable"></table>
-
 <h3>Orders</h3>
 <table id="ordersTable"></table>
-
 <h3>Send Notification</h3>
 <input id="notifyUser" placeholder="Username">
 <textarea id="notifyMsg" placeholder="Message"></textarea>
@@ -233,48 +121,22 @@ th,td{
 </div>
 
 <script>
-/* ---------- PRODUCTS ---------- */
-const products={
-"Spiral Fidget":{Small:2,Medium:3.5,Large:5},
-"Articulated Octopus":{Small:2.5,Medium:4,Large:6},
-"Infinity Cube":{Small:2,Medium:3.5,Large:5},
-"Invertible Star":{Small:2,Medium:4,Large:6},
-"Articulated Snake":{Small:4,Medium:7,Large:10}
-};
+let currentUser = null;
 
-/* ---------- AUTH ---------- */
-function signup(){
-let users=JSON.parse(localStorage.users||"{}");
-if(!username.value)return alert("Username required");
-if(users[username.value])return alert("User exists");
-users[username.value]={pass:btoa(password.value),email:email.value||"",premium:false};
-localStorage.users=JSON.stringify(users);
-alert("Account created");
+// ---------- UTILS ----------
+function show(id){
+["loginPage","modelsPage","customizePage","adminPage","notificationsPage"].forEach(p=>document.getElementById(p).classList.add("hidden"));
+document.getElementById(id).classList.remove("hidden");
+if(id==="notificationsPage") loadNotifications();
 }
 
-function login(){
-let users=JSON.parse(localStorage.users||"{}");
-let u=users[username.value];
-if(u && u.pass===btoa(password.value)){
-localStorage.current=username.value;
-init();
-}else alert("Login failed");
-}
-
-function logout(){localStorage.removeItem("current");location.reload();}
-
-function init(){
-show("modelsPage");
-accountBox.classList.remove("hidden");
-notifyBtn.style.display="inline";
-userLabel.textContent="👤 "+localStorage.current;
-loadProducts();
-}
-
-/* ---------- PRODUCTS ---------- */
-function loadProducts(){
+// ---------- PRODUCTS ----------
+let productsData={};
+async function loadProducts(){
+const resp = await fetch("/api/products");
+productsData = await resp.json();
 productGrid.innerHTML="";
-for(let p in products){
+for(let p in productsData){
 let d=document.createElement("div");
 d.className="card small-card";
 d.innerHTML=`<h3>${p}</h3><button onclick="selectProduct('${p}')">Customize</button>`;
@@ -282,133 +144,66 @@ productGrid.appendChild(d);
 }
 }
 
+// ---------- AUTH ----------
+async function signup(){
+const resp=await fetch("/api/signup",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:username.value,password:password.value,realName:realName.value,email:email.value})});
+alert(await resp.text());
+}
+async function login(){
+const resp=await fetch("/api/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:username.value,password:password.value})});
+if(resp.ok){
+currentUser=await resp.json();
+accountBox.classList.remove("hidden");
+userLabel.textContent="👤 "+currentUser.username;
+notifyBtn.style.display="inline";
+show("modelsPage");
+loadProducts();
+}else alert("Login failed");
+}
+function logout(){currentUser=null;accountBox.classList.add("hidden");location.reload();}
+
+// ---------- CUSTOMIZATION ----------
 function selectProduct(p){
-localStorage.product=p;
+localStorage.setItem("product",p);
 productTitle.textContent=p;
 size.innerHTML="";
-for(let s in products[p]){
-size.innerHTML+=`<option>${s} – $${products[p][s]}</option>`;
+for(let s in productsData[p]){
+size.innerHTML+=`<option>${s} – $${productsData[p][s]}</option>`;
 }
+premiumSection.classList.toggle("locked",!currentUser.premium);
 updateTotal();
-let users=JSON.parse(localStorage.users||"{}");
-premiumSection.classList.toggle("locked",!users[localStorage.current].premium);
 show("customizePage");
 }
-
-/* ---------- TOTAL COST ---------- */
 function updateTotal(){
-let prod=localStorage.product;
 let s=size.value.split(" – ")[0];
-let cost=products[prod]?[s]?products[prod][s]:0:0;
+let cost=productsData[localStorage.getItem("product")][s];
 totalCost.textContent=cost.toFixed(2);
 }
 size.addEventListener("change",updateTotal);
 
-/* ---------- ORDERS ---------- */
-function placeOrder(){
-let users=JSON.parse(localStorage.users||"{}");
-let u=users[localStorage.current];
-if(!u.premium && (premiumUpgrade.value!=="none"||special.value))
-return alert("Premium required");
-
-let orders=JSON.parse(localStorage.orders||"[]");
-orders.push({
-user:localStorage.current,
-product:localStorage.product,
-size:size.value,
-color:color.value,
-qty:qty.value,
-premium:premiumUpgrade.value,
-special:special.value,
-time:new Date().toLocaleString()
-});
-localStorage.orders=JSON.stringify(orders);
-orderNotice.classList.remove("hidden");
-
-// send notifications
-setTimeout(()=>{
-let n=JSON.parse(localStorage.notifications||"{}");
-n[localStorage.current]=n[localStorage.current]||[];
-n[localStorage.current].push(
-`Your order for ${localStorage.product} will start printing. Estimated delivery: ${(new Date(Date.now()+5*24*60*60*1000)).toLocaleDateString()}`
-);
-localStorage.notifications=JSON.stringify(n);
-},1000);
+// ---------- ORDERS ----------
+async function placeOrder(){
+const resp=await fetch("/api/order",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:currentUser.username,product:localStorage.getItem("product"),size:size.value.split(" – ")[0],color:color.value,qty:qty.value,premiumUpgrade:premiumUpgrade.value,special:special.value})});
+if(resp.ok){orderNotice.classList.remove("hidden");alert(await resp.text());} else alert(await resp.text());
 }
 
-/* ---------- PREMIUM ---------- */
-function buyPremium(){
-let orders=JSON.parse(localStorage.orders||"[]");
-orders.push({user:localStorage.current,product:"Premium Account",price:2,time:new Date().toLocaleString()});
-localStorage.orders=JSON.stringify(orders);
-
-let users=JSON.parse(localStorage.users||"{}");
-users[localStorage.current].premium=true;
-localStorage.users=JSON.stringify(users);
-alert("Premium account purchased!");
-init();
+// ---------- PREMIUM ----------
+async function buyPremium(){
+const resp=await fetch("/api/premium-request",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:currentUser.username})});
+alert(await resp.text());
 }
 
-/* ---------- NOTIFICATIONS ---------- */
-function sendNotification(){
-let n=JSON.parse(localStorage.notifications||"{}");
-n[notifyUser.value]=n[notifyUser.value]||[];
-n[notifyUser.value].push(notifyMsg.value);
-localStorage.notifications=JSON.stringify(n);
+// ---------- NOTIFICATIONS ----------
+async function loadNotifications(){
+const resp=await fetch(`/api/notifications/${currentUser.username}`);
+const notes=await resp.json();
+notifications.innerHTML="";
+notes.forEach(n=>{notifications.innerHTML+=`<div class="card small-card">${n.message}</div>`});
+}
+async function sendNotification(){
+await fetch("/api/notify",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:notifyUser.value,message:notifyMsg.value})});
 alert("Sent");
 }
-
-function loadNotifications(){
-let n=JSON.parse(localStorage.notifications||"{}");
-notifications.innerHTML="";
-(n[localStorage.current]||[]).forEach(m=>{
-notifications.innerHTML+=`<div class="card small-card">${m}</div>`;
-});
-}
-
-/* ---------- ADMIN ---------- */
-document.addEventListener("keydown",e=>{
-if(e.ctrlKey&&e.key==="a"){
-e.preventDefault();
-if(prompt("Admin Password")!=="stego")return;
-show("adminPage");
-loadAdmin();
-}
-});
-
-function loadAdmin(){
-let users=JSON.parse(localStorage.users||"{}");
-accountsTable.innerHTML="<tr><th>User</th><th>Premium</th><th>Toggle</th></tr>";
-for(let u in users){
-accountsTable.innerHTML+=`<tr><td>${u}</td><td>${users[u].premium}</td>
-<td><button onclick="togglePremium('${u}')">Toggle</button></td></tr>`;
-}
-
-let orders=JSON.parse(localStorage.orders||"[]");
-ordersTable.innerHTML="<tr><th>User</th><th>Item</th><th>Details</th><th>Time</th></tr>";
-orders.forEach(o=>{
-ordersTable.innerHTML+=`<tr><td>${o.user}</td><td>${o.product}</td>
-<td>${o.size||""} ${o.color||""} ${o.special||""}</td><td>${o.time}</td></tr>`;
-});
-}
-
-function togglePremium(u){
-let users=JSON.parse(localStorage.users||"{}");
-users[u].premium=!users[u].premium;
-localStorage.users=JSON.stringify(users);
-loadAdmin();
-}
-
-/* ---------- PAGE SWITCH ---------- */
-function show(id){
-["loginPage","modelsPage","customizePage","adminPage","notificationsPage"]
-.forEach(p=>document.getElementById(p).classList.add("hidden"));
-document.getElementById(id).classList.remove("hidden");
-if(id==="notificationsPage")loadNotifications();
-}
-
-/* ---------- AUTO LOGIN ---------- */
-if(localStorage.current)init();
 </script>
 
 </body>
