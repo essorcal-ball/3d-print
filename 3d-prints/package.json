@@ -1,0 +1,14 @@
+{
+  "name": "3d-prints",
+  "version": "1.0.0",
+  "description": "3D Prints - 3D printed toys and custom orders",
+  "type": "module",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "body-parser": "^1.20.2"
+  }
+}
