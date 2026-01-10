@@ -1,152 +1,212 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>3D Prints</title>
+<meta charset="UTF-8">
+<title>Ison 3D</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    /* RESET */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
-    }
+<style>
+/* RESET */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
 
-    /* PAGE BACKGROUND */
-    body {
-      min-height: 100vh;
-      background: 
-        linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
-        url("/public/background.png") center / cover no-repeat fixed;
-      color: white;
-    }
+/* BACKGROUND */
+body {
+  min-height: 100vh;
+  background:
+    linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)),
+    url("/public/background.png") center / cover no-repeat fixed;
+  color: white;
+  overflow-x: hidden;
+}
 
-    /* FADE-IN ANIMATION */
-    .fade-in {
-      animation: fadeIn 1.2s ease forwards;
-      opacity: 0;
-    }
+/* PAGE FADE-IN */
+.page {
+  animation: fadeIn 1.2s ease forwards;
+  opacity: 0;
+}
 
-    @keyframes fadeIn {
-      to {
-        opacity: 1;
-      }
-    }
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
 
-    /* HEADER */
-    header {
-      padding: 20px 40px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(6px);
-    }
+/* HEADER */
+header {
+  padding: 20px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(8px);
+}
 
-    header h1 {
-      color: orange;
-      font-size: 28px;
-    }
+header h1 {
+  font-size: 30px;
+  color: orange;
+  letter-spacing: 1px;
+}
 
-    /* BUTTONS */
-    button {
-      background: linear-gradient(135deg, armygreen, green);
-      background-color: #556b2f;
-      color: white;
-      border: none;
-      padding: 12px 22px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 15px;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
+/* BUTTONS */
+button {
+  background: linear-gradient(135deg, #556b2f, #2e8b57);
+  color: white;
+  border: none;
+  padding: 12px 22px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 15px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
 
-    button:hover {
-      transform: scale(1.08);
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
-    }
+button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 18px rgba(255,165,0,0.7);
+}
 
-    /* MAIN CONTENT */
-    main {
-      padding: 60px 40px;
-      text-align: center;
-    }
+/* MAIN */
+main {
+  padding: 70px 32px;
+  text-align: center;
+}
 
-    main h2 {
-      font-size: 36px;
-      margin-bottom: 15px;
-    }
+/* HERO */
+.hero h2 {
+  font-size: 40px;
+  margin-bottom: 16px;
+}
 
-    main p {
-      font-size: 18px;
-      max-width: 700px;
-      margin: 0 auto 30px;
-      opacity: 0.9;
-    }
+.hero p {
+  font-size: 18px;
+  max-width: 760px;
+  margin: 0 auto 36px;
+  opacity: 0.9;
+}
 
-    /* PRODUCT GRID (placeholder styling) */
-    .products {
-      display: flex;
-      gap: 20px;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin-top: 30px;
-    }
+/* PRODUCT GRID */
+.products {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 24px;
+  max-width: 1200px;
+  margin: auto;
+}
 
-    .product {
-      background: rgba(0, 0, 0, 0.6);
-      border-radius: 14px;
-      padding: 20px;
-      width: 200px;
-      backdrop-filter: blur(6px);
-    }
+/* GLASS CARD */
+.product {
+  background: rgba(255,255,255,0.12);
+  border-radius: 18px;
+  padding: 18px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
 
-    .product h3 {
-      margin-bottom: 10px;
-      color: orange;
-    }
+.product:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 18px 40px rgba(0,0,0,0.7);
+}
 
-    .product button {
-      margin-top: 10px;
-      width: 100%;
-    }
-  </style>
+/* IMAGE PREVIEW PLACEHOLDER */
+.preview {
+  height: 140px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #444, #666);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  opacity: 0.85;
+}
+
+/* PRODUCT TEXT */
+.product h3 {
+  color: orange;
+  margin-bottom: 6px;
+}
+
+.product p {
+  font-size: 14px;
+  opacity: 0.85;
+}
+
+/* PREMIUM BANNER */
+.premium {
+  margin: 50px auto 0;
+  max-width: 600px;
+  background: rgba(0,0,0,0.7);
+  padding: 24px;
+  border-radius: 18px;
+  box-shadow: 0 0 30px rgba(255,165,0,0.4);
+}
+
+.premium h3 {
+  color: orange;
+  margin-bottom: 10px;
+}
+</style>
 </head>
 
 <body>
-  <div class="fade-in">
-    <header>
-      <h1>3D Prints</h1>
-      <div>
-        <a href="/login"><button>Login</button></a>
-      </div>
-    </header>
+<div class="page">
 
-    <main>
-      <h2>Custom 3D Printed Toys & Models</h2>
-      <p>
-        Choose from articulated toys, fidgets, and custom prints — made to order
-        with premium upgrades available.
-      </p>
+<header>
+  <h1>Ison 3D</h1>
+  <a href="/login"><button>Login</button></a>
+</header>
 
-      <div class="products">
-        <div class="product">
-          <h3>Spiral Fidget</h3>
-          <button>View Options</button>
-        </div>
+<main>
+  <section class="hero">
+    <h2>Custom 3D Printed Toys & Models</h2>
+    <p>
+      Premium-quality articulated toys, fidgets, and custom 3D prints —
+      made to order and delivered with care.
+    </p>
+  </section>
 
-        <div class="product">
-          <h3>Articulated Octopus</h3>
-          <button>View Options</button>
-        </div>
+  <section class="products">
+    <div class="product">
+      <div class="preview">Image Coming Soon</div>
+      <h3>Spiral Fidget</h3>
+      <p>Fun, smooth, and satisfying</p>
+      <button>View Options</button>
+    </div>
 
-        <div class="product">
-          <h3>Infinity Cube</h3>
-          <button>View Options</button>
-        </div>
-      </div>
-    </main>
-  </div>
+    <div class="product">
+      <div class="preview">Image Coming Soon</div>
+      <h3>Articulated Octopus</h3>
+      <p>Flexible & detailed</p>
+      <button>View Options</button>
+    </div>
+
+    <div class="product">
+      <div class="preview">Image Coming Soon</div>
+      <h3>Infinity Cube</h3>
+      <p>Endless motion fidget</p>
+      <button>View Options</button>
+    </div>
+
+    <div class="product">
+      <div class="preview">Image Coming Soon</div>
+      <h3>Articulated Snake</h3>
+      <p>Fully poseable print</p>
+      <button>View Options</button>
+    </div>
+  </section>
+
+  <section class="premium">
+    <h3>Premium Account — $2</h3>
+    <p>
+      Unlock multi-color prints, special requests, and custom builds.
+    </p>
+    <button>Pay First</button>
+  </section>
+</main>
+
+</div>
 </body>
 </html>
