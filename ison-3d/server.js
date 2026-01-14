@@ -1,88 +1,107 @@
 import express from "express";
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
+import pkg from "pg";
+const { Pool } = pkg;
 
 const app = express();
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static("public"));
 
-const files = {
-  accounts: "accounts.json",
-  orders: "orders.json",
-  notifications: "notifications.json"
-};
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+});
 
-for (const f of Object.values(files)) {
-  if (!fs.existsSync(f)) fs.writeFileSync(f, "[]");
-}
+/* CREATE TABLES IF NOT EXISTS */
+await pool.query(`
+CREATE TABLE IF NOT EXISTS accounts (
+  id SERIAL PRIMARY KEY,
+  real_name TEXT NOT NULL,
+  username TEXT UNIQUE NOT NULL,
+  password TEXT NOT NULL,
+  premium BOOLEAN DEFAULT false
+);
 
-const read = f => JSON.parse(fs.readFileSync(f));
-const write = (f, d) => fs.writeFileSync(f, JSON.stringify(d, null, 2));
+CREATE TABLE IF NOT EXISTS orders (
+  id SERIAL PRIMARY KEY,
+  username TEXT,
+  item TEXT,
+  date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS notifications (
+  id SERIAL PRIMARY KEY,
+  username TEXT,
+  message TEXT,
+  date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+`);
 
 /* ACCOUNTS */
-app.post("/register", (req, res) => {
+app.post("/register", async (req, res) => {
   const { realName, username, password } = req.body;
-  const accounts = read(files.accounts);
-
-  if (!realName) return res.json({ error: "Real name required" });
-  if (accounts.find(a => a.username === username))
-    return res.json({ error: "Username exists" });
-
-  accounts.push({ realName, username, password, premium: false });
-  write(files.accounts, accounts);
-  res.json({ success: true });
+  try {
+    await pool.query(
+      "INSERT INTO accounts (real_name, username, password) VALUES ($1,$2,$3)",
+      [realName, username, password]
+    );
+    res.json({ success: true });
+  } catch {
+    res.json({ error: "Username already exists" });
+  }
 });
 
-app.post("/login", (req, res) => {
-  const acc = read(files.accounts)
-    .find(a => a.username === req.body.username && a.password === req.body.password);
-  if (!acc) return res.json({ error: "Invalid login" });
-  res.json(acc);
-});
-
-app.post("/delete-account", (req, res) => {
-  write(files.accounts, read(files.accounts)
-    .filter(a => a.username !== req.body.username));
-  res.json({ success: true });
+app.post("/login", async (req, res) => {
+  const { username, password } = req.body;
+  const r = await pool.query(
+    "SELECT real_name, username, premium FROM accounts WHERE username=$1 AND password=$2",
+    [username, password]
+  );
+  r.rows.length ? res.json(r.rows[0]) : res.json({ error: "Invalid login" });
 });
 
 /* ORDERS */
-app.post("/order", (req, res) => {
-  const orders = read(files.orders);
-  orders.push({ ...req.body, date: new Date().toLocaleString() });
-  write(files.orders, orders);
+app.post("/order", async (req, res) => {
+  await pool.query(
+    "INSERT INTO orders (username, item) VALUES ($1,$2)",
+    [req.body.user, req.body.item]
+  );
   res.json({ success: true });
 });
 
-app.get("/admin/orders", (req, res) => {
-  res.json(read(files.orders));
+/* ADMIN */
+app.get("/admin/orders", async (req, res) => {
+  const r = await pool.query("SELECT * FROM orders ORDER BY date DESC");
+  res.json(r.rows);
 });
 
-app.get("/admin/accounts", (req, res) => {
-  res.json(read(files.accounts));
+app.get("/admin/accounts", async (req, res) => {
+  const r = await pool.query("SELECT username, real_name, premium FROM accounts");
+  res.json(r.rows);
 });
 
-app.post("/admin/premium", (req, res) => {
-  const accounts = read(files.accounts);
-  const acc = accounts.find(a => a.username === req.body.username);
-  if (acc) acc.premium = req.body.premium;
-  write(files.accounts, accounts);
+app.post("/admin/premium", async (req, res) => {
+  await pool.query(
+    "UPDATE accounts SET premium=$1 WHERE username=$2",
+    [req.body.premium, req.body.username]
+  );
   res.json({ success: true });
 });
 
-app.post("/admin/notify", (req, res) => {
-  const notes = read(files.notifications);
-  notes.push(req.body);
-  write(files.notifications, notes);
+/* NOTIFICATIONS */
+app.post("/admin/notify", async (req, res) => {
+  await pool.query(
+    "INSERT INTO notifications (username, message) VALUES ($1,$2)",
+    [req.body.user, req.body.message]
+  );
   res.json({ success: true });
 });
 
-app.get("/notifications/:user", (req, res) => {
-  res.json(read(files.notifications).filter(n => n.user === req.params.user));
+app.get("/notifications/:user", async (req, res) => {
+  const r = await pool.query(
+    "SELECT message, date FROM notifications WHERE username=$1 ORDER BY date DESC",
+    [req.params.user]
+  );
+  res.json(r.rows);
 });
 
-app.listen(3000, () => console.log("Ison 3D running"));
+app.listen(3000, () => console.log("Ison 3D running with PostgreSQL"));
