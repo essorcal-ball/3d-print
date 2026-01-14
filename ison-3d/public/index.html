@@ -1,1 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Ison 3D</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="fade">
 
+<header>
+  <h1>Ison 3D</h1>
+  <nav>
+    <button onclick="show('home')">Home</button>
+    <button onclick="show('login')">Login</button>
+    <button onclick="show('admin')">Admin</button>
+  </nav>
+</header>
+
+<section id="home">
+  <h2>Order a 3D Print</h2>
+  <input id="name" placeholder="Your real name" required>
+  <select id="item">
+    <option>Spiral Fidget - Small ($2)</option>
+    <option>Articulated Octopus - Medium ($4)</option>
+  </select>
+  <button onclick="placeOrder()">Place Order</button>
+</section>
+
+<section id="login" class="hidden">
+  <h2>Login</h2>
+  <input placeholder="Username">
+  <input placeholder="Password" type="password">
+  <button>Login</button>
+</section>
+
+<section id="admin" class="hidden">
+  <h2>Admin Orders</h2>
+  <button onclick="loadOrders()">Load Orders</button>
+  <pre id="orders"></pre>
+</section>
+
+<script>
+function show(id) {
+  document.querySelectorAll("section").forEach(s => s.classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
+}
+
+function placeOrder() {
+  fetch("/order", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      name: name.value,
+      item: item.value
+    })
+  }).then(() => alert("Order placed. Pay in cash."));
+}
+
+function loadOrders() {
+  fetch("/admin/orders")
+    .then(r => r.json())
+    .then(d => orders.textContent = JSON.stringify(d, null, 2));
+}
+</script>
+
+</body>
+</html>
