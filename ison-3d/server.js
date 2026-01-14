@@ -25,31 +25,29 @@ const write = (f, d) => fs.writeFileSync(f, JSON.stringify(d, null, 2));
 
 /* ACCOUNTS */
 app.post("/register", (req, res) => {
-  const { username, password, realName } = req.body;
+  const { realName, username, password } = req.body;
   const accounts = read(files.accounts);
 
-  if (accounts.find(a => a.username === username)) {
+  if (!realName) return res.json({ error: "Real name required" });
+  if (accounts.find(a => a.username === username))
     return res.json({ error: "Username exists" });
-  }
 
-  accounts.push({
-    username,
-    password,
-    realName,
-    premium: false
-  });
-
+  accounts.push({ realName, username, password, premium: false });
   write(files.accounts, accounts);
   res.json({ success: true });
 });
 
 app.post("/login", (req, res) => {
-  const { username, password } = req.body;
-  const account = read(files.accounts)
-    .find(a => a.username === username && a.password === password);
+  const acc = read(files.accounts)
+    .find(a => a.username === req.body.username && a.password === req.body.password);
+  if (!acc) return res.json({ error: "Invalid login" });
+  res.json(acc);
+});
 
-  if (!account) return res.json({ error: "Invalid login" });
-  res.json(account);
+app.post("/delete-account", (req, res) => {
+  write(files.accounts, read(files.accounts)
+    .filter(a => a.username !== req.body.username));
+  res.json({ success: true });
 });
 
 /* ORDERS */
@@ -60,7 +58,6 @@ app.post("/order", (req, res) => {
   res.json({ success: true });
 });
 
-/* ADMIN */
 app.get("/admin/orders", (req, res) => {
   res.json(read(files.orders));
 });
@@ -88,6 +85,4 @@ app.get("/notifications/:user", (req, res) => {
   res.json(read(files.notifications).filter(n => n.user === req.params.user));
 });
 
-app.listen(3000, () => {
-  console.log("Ison 3D running");
-});
+app.listen(3000, () => console.log("Ison 3D running"));
