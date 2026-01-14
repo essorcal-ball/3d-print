@@ -11,55 +11,98 @@
   <nav>
     <button onclick="show('home')">Home</button>
     <button onclick="show('login')">Login</button>
-    <button onclick="show('admin')">Admin</button>
+    <button onclick="show('register')">Create Account</button>
+    <button onclick="show('notifications')" id="notifBtn" hidden>Notifications</button>
   </nav>
 </header>
 
 <section id="home">
-  <h2>Order a 3D Print</h2>
-  <input id="name" placeholder="Your real name" required>
-  <select id="item">
-    <option>Spiral Fidget - Small ($2)</option>
-    <option>Articulated Octopus - Medium ($4)</option>
-  </select>
-  <button onclick="placeOrder()">Place Order</button>
+  <h2>Order 3D Prints</h2>
+  <button onclick="order()">Place Order</button>
 </section>
 
 <section id="login" class="hidden">
   <h2>Login</h2>
-  <input placeholder="Username">
-  <input placeholder="Password" type="password">
-  <button>Login</button>
+  <input id="luser" placeholder="Username">
+  <input id="lpass" type="password" placeholder="Password">
+  <button onclick="login()">Login</button>
 </section>
 
-<section id="admin" class="hidden">
-  <h2>Admin Orders</h2>
-  <button onclick="loadOrders()">Load Orders</button>
-  <pre id="orders"></pre>
+<section id="register" class="hidden">
+  <h2>Create Account</h2>
+  <p><b>Use your real name so we know who to deliver to.</b></p>
+  <input id="rname" placeholder="Real Name" required>
+  <input id="ruser" placeholder="Username">
+  <input id="rpass" type="password" placeholder="Password">
+  <button onclick="register()">Create</button>
+</section>
+
+<section id="notifications" class="hidden">
+  <h2>Your Notifications</h2>
+  <pre id="notes"></pre>
 </section>
 
 <script>
+let user = null;
+
 function show(id) {
   document.querySelectorAll("section").forEach(s => s.classList.add("hidden"));
   document.getElementById(id).classList.remove("hidden");
 }
 
-function placeOrder() {
+function register() {
+  fetch("/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      realName: rname.value,
+      username: ruser.value,
+      password: rpass.value
+    })
+  }).then(() => alert("Account created"));
+}
+
+function login() {
+  fetch("/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      username: luser.value,
+      password: lpass.value
+    })
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (d.error) return alert(d.error);
+    user = d;
+    notifBtn.hidden = false;
+    alert("Logged in as " + user.realName);
+    show("home");
+  });
+}
+
+function order() {
+  if (!user) return alert("Login first");
   fetch("/order", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      name: name.value,
-      item: item.value
+      user: user.username,
+      premium: user.premium
     })
   }).then(() => alert("Order placed. Pay in cash."));
 }
 
-function loadOrders() {
-  fetch("/admin/orders")
+function loadNotes() {
+  fetch("/notifications/" + user.username)
     .then(r => r.json())
-    .then(d => orders.textContent = JSON.stringify(d, null, 2));
+    .then(d => notes.textContent = JSON.stringify(d, null, 2));
 }
+
+notifBtn.onclick = () => {
+  show("notifications");
+  loadNotes();
+};
 </script>
 
 </body>
