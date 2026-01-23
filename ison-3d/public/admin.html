@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Ison 3D — Admin</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+  margin: 0;
+  background: #0b0b0b;
+  color: white;
+  font-family: Arial, sans-serif;
+  animation: fadeIn 0.6s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+header {
+  background: black;
+  padding: 14px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: bold;
+}
+section {
+  max-width: 1100px;
+  margin: auto;
+  padding: 20px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+th, td {
+  border: 1px solid #333;
+  padding: 8px;
+  text-align: center;
+}
+th {
+  background: #111;
+}
+button {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+button:hover {
+  transform: scale(1.1);
+}
+.green { background: #00aa55; color: white; }
+.blue { background: #0077ff; color: white; }
+.orange { background: #ff8800; color: black; }
+.gray { background: #444; color: white; }
+</style>
+</head>
+
+<body>
+
+<header>Ison 3D — Admin Dashboard</header>
+
+<section>
+  <button class="gray" onclick="location.href='/'">⬅ Back to Home</button>
+
+  <h2>Accounts</h2>
+  <table id="usersTable">
+    <tr>
+      <th>ID</th>
+      <th>Username</th>
+      <th>Real Name</th>
+      <th>Email</th>
+      <th>Premium</th>
+      <th>Admin</th>
+      <th>Actions</th>
+    </tr>
+  </table>
+
+  <h2>Orders</h2>
+  <table id="ordersTable">
+    <tr>
+      <th>ID</th>
+      <th>User</th>
+      <th>Item</th>
+      <th>Size</th>
+      <th>Color</th>
+      <th>Qty</th>
+      <th>Status</th>
+      <th>Set Status</th>
+    </tr>
+  </table>
+</section>
+
+<script>
+// ADMIN SHORTCUT
+document.addEventListener("keydown", e => {
+  if (e.ctrlKey && e.key.toLowerCase() === "a") {
+    e.preventDefault();
+    fetch("/api/is-admin")
+      .then(r => r.json())
+      .then(d => {
+        if (d.admin) location.href = "/admin.html";
+        else alert("Admin only");
+      });
+  }
+});
+
+// LOAD USERS
+function loadUsers() {
+  fetch("/api/admin/users")
+    .then(r => r.json())
+    .then(users => {
+      const table = document.getElementById("usersTable");
+      table.innerHTML = `
+        <tr>
+          <th>ID</th><th>Username</th><th>Real Name</th>
+          <th>Email</th><th>Premium</th><th>Admin</th><th>Actions</th>
+        </tr>
+      `;
+      users.forEach(u => {
+        table.innerHTML += `
+          <tr>
+            <td>${u.id}</td>
+            <td>${u.username}</td>
+            <td>${u.real_name}</td>
+            <td>${u.email || ""}</td>
+            <td>${u.is_premium ? "Yes" : "No"}</td>
+            <td>${u.is_admin ? "Yes" : "No"}</td>
+            <td>
+              <button class="green" onclick="setPremium(${u.id}, ${!u.is_premium})">
+                ${u.is_premium ? "Remove Premium" : "Make Premium"}
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+    });
+}
+
+// LOAD ORDERS
+function loadOrders() {
+  fetch("/api/admin/orders")
+    .then(r => r.json())
+    .then(orders => {
+      const table = document.getElementById("ordersTable");
+      table.innerHTML = `
+        <tr>
+          <th>ID</th><th>User</th><th>Item</th><th>Size</th>
+          <th>Color</th><th>Qty</th><th>Status</th><th>Set Status</th>
+        </tr>
+      `;
+      orders.forEach(o => {
+        table.innerHTML += `
+          <tr>
+            <td>${o.id}</td>
+            <td>${o.real_name}</td>
+            <td>${o.item}</td>
+            <td>${o.size}</td>
+            <td>${o.color}</td>
+            <td>${o.quantity}</td>
+            <td>${o.status}</td>
+            <td>
+              <select onchange="setStatus(${o.id}, this.value)">
+                <option>Pending Payment</option>
+                <option>Printing</option>
+                <option>Ready</option>
+                <option>Delivered</option>
+              </select>
+            </td>
+          </tr>
+        `;
+      });
+    });
+}
+
+// SET PREMIUM
+function setPremium(userId, premium) {
+  fetch("/api/admin/set-premium", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ userId, premium })
+  }).then(() => loadUsers());
+}
+
+// SET STATUS
+function setStatus(orderId, status) {
+  fetch("/api/admin/order-status", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ orderId, status })
+  });
+}
+
+// AUTO REFRESH
+loadUsers();
+loadOrders();
+setInterval(loadOrders, 5000);
+</script>
+
+</body>
+</html>
