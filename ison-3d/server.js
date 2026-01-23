@@ -86,6 +86,7 @@ app.post("/admin/premium", async (req, res) => {
   );
   res.json({ success: true });
 });
+
 // Get all users
 app.get("/api/admin/users", async (req, res) => {
   if (!req.session.user?.isAdmin)
@@ -95,6 +96,33 @@ app.get("/api/admin/users", async (req, res) => {
     "SELECT id, username, real_name, email, is_premium, is_admin FROM users ORDER BY id"
   );
   res.json(result.rows);
+});
+// ANALYTICS DASHBOARD
+app.get("/api/admin/analytics", async (req, res) => {
+  if (!req.session.user?.isAdmin)
+    return res.status(403).json({ error: "Admin only" });
+
+  const totalOrders = await pool.query("SELECT COUNT(*) FROM orders");
+  const todayOrders = await pool.query(
+    "SELECT COUNT(*) FROM orders WHERE created_at::date = CURRENT_DATE"
+  );
+  const totalItems = await pool.query(
+    "SELECT COALESCE(SUM(quantity),0) FROM orders"
+  );
+  const popular = await pool.query(`
+    SELECT item, COUNT(*) AS count
+    FROM orders
+    GROUP BY item
+    ORDER BY count DESC
+    LIMIT 1
+  `);
+
+  res.json({
+    totalOrders: totalOrders.rows[0].count,
+    todayOrders: todayOrders.rows[0].count,
+    totalItems: totalItems.rows[0].coalesce,
+    popularItem: popular.rows[0]?.item || "None yet"
+  });
 });
 
 // Update order status
