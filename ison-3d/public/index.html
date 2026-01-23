@@ -2,202 +2,208 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Ison 3D — Admin</title>
+<title>3D Prints</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <style>
-body {
-  margin: 0;
-  background: #0b0b0b;
-  color: white;
-  font-family: Arial, sans-serif;
-  animation: fadeIn 0.6s ease;
+:root{
+  --black:#050505;
+  --army:#3a5f3a;
+  --green:#1f8a50;
+  --orange:#ff8c00;
+  --light:#e5e7eb;
 }
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-header {
-  background: black;
-  padding: 14px;
-  text-align: center;
-  font-size: 22px;
-  font-weight: bold;
-}
-section {
-  max-width: 1100px;
-  margin: auto;
-  padding: 20px;
-}
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 10px;
-}
-th, td {
-  border: 1px solid #333;
-  padding: 8px;
-  text-align: center;
-}
-th {
-  background: #111;
-}
-button {
-  padding: 6px 12px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  transition: transform 0.15s ease;
-}
-button:hover {
-  transform: scale(1.1);
-}
-.green { background: #00aa55; color: white; }
-.blue { background: #0077ff; color: white; }
-.orange { background: #ff8800; color: black; }
-.gray { background: #444; color: white; }
+body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(160deg,var(--black),#0b1a12);color:var(--light);}
+.hidden{display:none;}
+header{display:flex;justify-content:space-between;align-items:center;padding:14px 22px;background:linear-gradient(90deg,var(--army),var(--black));}
+header h1{margin:0;color:var(--orange);}
+#accountBox{display:flex;gap:12px;align-items:center;}
+button{background:linear-gradient(135deg,var(--orange),#ffae42);border:none;border-radius:10px;padding:8px 12px;font-weight:bold;cursor:pointer;}
+.card{background:rgba(0,0,0,.75);border:2px solid var(--army);border-radius:16px;padding:18px;width:280px;margin:16px auto;}
+.small-card{width:220px;}
+input,select,textarea{width:100%;margin:6px 0;padding:8px;border-radius:8px;background:#0b1a12;color:var(--light);border:2px solid var(--army);}
+select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--orange) 50%),linear-gradient(135deg,var(--orange) 50%,transparent 50%);background-position:calc(100% - 18px) calc(1em),calc(100% - 13px) calc(1em);background-size:5px 5px;background-repeat:no-repeat;}
+.locked{opacity:.45;pointer-events:none;position:relative;}
+.locked::after{content:"🔒";position:absolute;top:8px;right:10px;font-size:20px;}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,220px);gap:14px;padding:20px;justify-content:center;}
+.notice{text-align:center;color:var(--orange);margin-top:12px;}
+table{width:95%;margin:auto;border-collapse:collapse;table-layout:fixed;text-align:center;}
+th,td{border-bottom:1px solid var(--army);padding:8px;}
+.back-btn{margin-top:10px;}
 </style>
 </head>
-
 <body>
 
-<header>Ison 3D — Admin Dashboard</header>
+<header>
+  <h1>3D Prints</h1>
+  <div id="accountBox" class="hidden">
+    <span id="userLabel"></span>
+    <button onclick="show('modelsPage')">🏠 Home</button>
+    <button id="notifyBtn" onclick="show('notificationsPage')">🔔 Notifications</button>
+    <button onclick="logout()">Logout</button>
+  </div>
+</header>
 
-<section>
-  <button class="gray" onclick="location.href='/'">⬅ Back to Home</button>
+<!-- LOGIN -->
+<div id="loginPage" class="card">
+<h2>Login / Sign Up</h2>
+<p style="color:var(--orange);font-weight:bold;">⚠ Enter your real name for delivery!</p>
+<input id="realName" placeholder="Full Real Name (required)">
+<input id="username" placeholder="Username (required)">
+<input id="email" placeholder="Email (optional)">
+<input id="password" type="password" placeholder="Password">
+<button onclick="signup()">Sign Up</button>
+<button onclick="login()">Login</button>
+<hr>
+<h3 style="color:var(--orange)">Premium Account – $2</h3>
+<p>Unlock premium upgrades & special build requests</p>
+<button onclick="buyPremium()">Request Premium (Admin approval)</button>
+</div>
 
-  <h2>Accounts</h2>
-  <table id="usersTable">
-    <tr>
-      <th>ID</th>
-      <th>Username</th>
-      <th>Real Name</th>
-      <th>Email</th>
-      <th>Premium</th>
-      <th>Admin</th>
-      <th>Actions</th>
-    </tr>
-  </table>
+<!-- MODELS -->
+<div id="modelsPage" class="hidden">
+<h2 style="text-align:center">Choose a Product</h2>
+<div class="grid" id="productGrid"></div>
+<div class="card small-card">
+<h3>Premium Account – $2</h3>
+<p>Unlock premium upgrades & special build requests</p>
+<button onclick="buyPremium()">Request Premium (Admin approval)</button>
+</div>
+</div>
 
-  <h2>Orders</h2>
-  <table id="ordersTable">
-    <tr>
-      <th>ID</th>
-      <th>User</th>
-      <th>Item</th>
-      <th>Size</th>
-      <th>Color</th>
-      <th>Qty</th>
-      <th>Status</th>
-      <th>Set Status</th>
-    </tr>
-  </table>
-</section>
+<!-- CUSTOMIZE -->
+<div id="customizePage" class="hidden">
+<h2 id="productTitle" style="text-align:center"></h2>
+<div class="card">
+<select id="size"></select>
+<select id="color">
+<option selected>White</option>
+<option>Army Green</option>
+<option>Black</option>
+<option>Light Blue</option>
+<option>Silver</option>
+<option>Orange</option>
+<option>Red</option>
+</select>
+<input id="qty" type="number" min="1" value="1">
+<div id="premiumSection">
+<select id="premiumUpgrade">
+<option value="none">No Premium</option>
+<option value="two">Two Colors</option>
+<option value="detail">High Detail</option>
+</select>
+<textarea id="special" placeholder="Special Request"></textarea>
+</div>
+<p>Total Cost: $<span id="totalCost">0.00</span></p>
+<button onclick="placeOrder()">Place Order</button>
+<p class="notice hidden" id="orderNotice">✅ Order placed! Notifications sent.</p>
+<button class="back-btn" onclick="show('modelsPage')">Back to Home</button>
+</div>
+</div>
+
+<!-- NOTIFICATIONS -->
+<div id="notificationsPage" class="hidden">
+<h2 style="text-align:center">Notifications</h2>
+<div id="notifications"></div>
+<button class="back-btn" onclick="show('modelsPage')">Back to Home</button>
+</div>
+
+<!-- ADMIN -->
+<div id="adminPage" class="hidden">
+<h2 style="text-align:center">Admin Panel</h2>
+<h3>Accounts</h3>
+<table id="accountsTable"></table>
+<h3>Orders</h3>
+<table id="ordersTable"></table>
+<h3>Send Notification</h3>
+<input id="notifyUser" placeholder="Username">
+<textarea id="notifyMsg" placeholder="Message"></textarea>
+<button onclick="sendNotification()">Send</button>
+</div>
 
 <script>
-// ADMIN SHORTCUT
-document.addEventListener("keydown", e => {
-  if (e.ctrlKey && e.key.toLowerCase() === "a") {
-    e.preventDefault();
-    fetch("/api/is-admin")
-      .then(r => r.json())
-      .then(d => {
-        if (d.admin) location.href = "/admin.html";
-        else alert("Admin only");
-      });
-  }
-});
+let currentUser = null;
 
-// LOAD USERS
-function loadUsers() {
-  fetch("/api/admin/users")
-    .then(r => r.json())
-    .then(users => {
-      const table = document.getElementById("usersTable");
-      table.innerHTML = `
-        <tr>
-          <th>ID</th><th>Username</th><th>Real Name</th>
-          <th>Email</th><th>Premium</th><th>Admin</th><th>Actions</th>
-        </tr>
-      `;
-      users.forEach(u => {
-        table.innerHTML += `
-          <tr>
-            <td>${u.id}</td>
-            <td>${u.username}</td>
-            <td>${u.real_name}</td>
-            <td>${u.email || ""}</td>
-            <td>${u.is_premium ? "Yes" : "No"}</td>
-            <td>${u.is_admin ? "Yes" : "No"}</td>
-            <td>
-              <button class="green" onclick="setPremium(${u.id}, ${!u.is_premium})">
-                ${u.is_premium ? "Remove Premium" : "Make Premium"}
-              </button>
-            </td>
-          </tr>
-        `;
-      });
-    });
+// ---------- UTILS ----------
+function show(id){
+["loginPage","modelsPage","customizePage","adminPage","notificationsPage"].forEach(p=>document.getElementById(p).classList.add("hidden"));
+document.getElementById(id).classList.remove("hidden");
+if(id==="notificationsPage") loadNotifications();
 }
 
-// LOAD ORDERS
-function loadOrders() {
-  fetch("/api/admin/orders")
-    .then(r => r.json())
-    .then(orders => {
-      const table = document.getElementById("ordersTable");
-      table.innerHTML = `
-        <tr>
-          <th>ID</th><th>User</th><th>Item</th><th>Size</th>
-          <th>Color</th><th>Qty</th><th>Status</th><th>Set Status</th>
-        </tr>
-      `;
-      orders.forEach(o => {
-        table.innerHTML += `
-          <tr>
-            <td>${o.id}</td>
-            <td>${o.real_name}</td>
-            <td>${o.item}</td>
-            <td>${o.size}</td>
-            <td>${o.color}</td>
-            <td>${o.quantity}</td>
-            <td>${o.status}</td>
-            <td>
-              <select onchange="setStatus(${o.id}, this.value)">
-                <option>Pending Payment</option>
-                <option>Printing</option>
-                <option>Ready</option>
-                <option>Delivered</option>
-              </select>
-            </td>
-          </tr>
-        `;
-      });
-    });
+// ---------- PRODUCTS ----------
+let productsData={};
+async function loadProducts(){
+const resp = await fetch("/api/products");
+productsData = await resp.json();
+productGrid.innerHTML="";
+for(let p in productsData){
+let d=document.createElement("div");
+d.className="card small-card";
+d.innerHTML=`<h3>${p}</h3><button onclick="selectProduct('${p}')">Customize</button>`;
+productGrid.appendChild(d);
+}
 }
 
-// SET PREMIUM
-function setPremium(userId, premium) {
-  fetch("/api/admin/set-premium", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ userId, premium })
-  }).then(() => loadUsers());
+// ---------- AUTH ----------
+async function signup(){
+const resp=await fetch("/api/signup",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:username.value,password:password.value,realName:realName.value,email:email.value})});
+alert(await resp.text());
+}
+async function login(){
+const resp=await fetch("/api/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:username.value,password:password.value})});
+if(resp.ok){
+currentUser=await resp.json();
+accountBox.classList.remove("hidden");
+userLabel.textContent="👤 "+currentUser.username;
+notifyBtn.style.display="inline";
+show("modelsPage");
+loadProducts();
+}else alert("Login failed");
+}
+function logout(){currentUser=null;accountBox.classList.add("hidden");location.reload();}
+
+// ---------- CUSTOMIZATION ----------
+function selectProduct(p){
+localStorage.setItem("product",p);
+productTitle.textContent=p;
+size.innerHTML="";
+for(let s in productsData[p]){
+size.innerHTML+=`<option>${s} – $${productsData[p][s]}</option>`;
+}
+premiumSection.classList.toggle("locked",!currentUser.premium);
+updateTotal();
+show("customizePage");
+}
+function updateTotal(){
+let s=size.value.split(" – ")[0];
+let cost=productsData[localStorage.getItem("product")][s];
+totalCost.textContent=cost.toFixed(2);
+}
+size.addEventListener("change",updateTotal);
+
+// ---------- ORDERS ----------
+async function placeOrder(){
+const resp=await fetch("/api/order",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:currentUser.username,product:localStorage.getItem("product"),size:size.value.split(" – ")[0],color:color.value,qty:qty.value,premiumUpgrade:premiumUpgrade.value,special:special.value})});
+if(resp.ok){orderNotice.classList.remove("hidden");alert(await resp.text());} else alert(await resp.text());
 }
 
-// SET STATUS
-function setStatus(orderId, status) {
-  fetch("/api/admin/order-status", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ orderId, status })
-  });
+// ---------- PREMIUM ----------
+async function buyPremium(){
+const resp=await fetch("/api/premium-request",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:currentUser.username})});
+alert(await resp.text());
 }
 
-// AUTO REFRESH
-loadUsers();
-loadOrders();
-setInterval(loadOrders, 5000);
+// ---------- NOTIFICATIONS ----------
+async function loadNotifications(){
+const resp=await fetch(`/api/notifications/${currentUser.username}`);
+const notes=await resp.json();
+notifications.innerHTML="";
+notes.forEach(n=>{notifications.innerHTML+=`<div class="card small-card">${n.message}</div>`});
+}
+async function sendNotification(){
+await fetch("/api/notify",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:notifyUser.value,message:notifyMsg.value})});
+alert("Sent");
+}
 </script>
 
 </body>
