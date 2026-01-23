@@ -88,15 +88,34 @@ app.post("/admin/premium", async (req, res) => {
 });
 
 // Get all users
-app.get("/api/admin/users", async (req, res) => {
+app.post("/api/admin/order-status", async (req, res) => {
   if (!req.session.user?.isAdmin)
     return res.status(403).json({ error: "Admin only" });
 
-  const result = await pool.query(
-    "SELECT id, username, real_name, email, is_premium, is_admin FROM users ORDER BY id"
+  const { orderId, status } = req.body;
+
+  const order = await pool.query(
+    "SELECT user_id FROM orders WHERE id=$1",
+    [orderId]
   );
-  res.json(result.rows);
+
+  await pool.query(
+    "UPDATE orders SET status=$1 WHERE id=$2",
+    [status, orderId]
+  );
+
+  // Auto notification
+  await pool.query(
+    "INSERT INTO notifications (user_id, message) VALUES ($1,$2)",
+    [
+      order.rows[0].user_id,
+      `Your order #${orderId} status is now: ${status}`
+    ]
+  );
+
+  res.json({ success: true });
 });
+
 // ANALYTICS DASHBOARD
 app.get("/api/admin/analytics", async (req, res) => {
   if (!req.session.user?.isAdmin)
