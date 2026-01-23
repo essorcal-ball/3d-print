@@ -13,10 +13,7 @@ body {
   font-family: Arial, sans-serif;
   animation: fadeIn 0.6s ease;
 }
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
+@keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
 header {
   background: black;
   padding: 14px;
@@ -25,9 +22,21 @@ header {
   font-weight: bold;
 }
 section {
-  max-width: 1100px;
+  max-width: 1200px;
   margin: auto;
   padding: 20px;
+}
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px,1fr));
+  gap: 10px;
+}
+.card {
+  background: #111;
+  padding: 15px;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 18px;
 }
 table {
   width: 100%;
@@ -39,9 +48,7 @@ th, td {
   padding: 8px;
   text-align: center;
 }
-th {
-  background: #111;
-}
+th { background: #111; }
 button {
   padding: 6px 12px;
   border-radius: 6px;
@@ -49,13 +56,10 @@ button {
   cursor: pointer;
   transition: transform 0.15s ease;
 }
-button:hover {
-  transform: scale(1.1);
-}
-.green { background: #00aa55; color: white; }
-.blue { background: #0077ff; color: white; }
-.orange { background: #ff8800; color: black; }
-.gray { background: #444; color: white; }
+button:hover { transform: scale(1.1); }
+.green { background:#00aa55;color:white;}
+.orange { background:#ff8800;color:black;}
+.gray { background:#444;color:white;}
 </style>
 </head>
 
@@ -66,32 +70,19 @@ button:hover {
 <section>
   <button class="gray" onclick="location.href='/'">⬅ Back to Home</button>
 
+  <h2>Business Analytics</h2>
+  <div class="cards">
+    <div class="card" id="totalOrders">Total Orders: --</div>
+    <div class="card" id="todayOrders">Orders Today: --</div>
+    <div class="card" id="totalItems">Items Sold: --</div>
+    <div class="card" id="popularItem">Popular Item: --</div>
+  </div>
+
   <h2>Accounts</h2>
-  <table id="usersTable">
-    <tr>
-      <th>ID</th>
-      <th>Username</th>
-      <th>Real Name</th>
-      <th>Email</th>
-      <th>Premium</th>
-      <th>Admin</th>
-      <th>Actions</th>
-    </tr>
-  </table>
+  <table id="usersTable"></table>
 
   <h2>Orders</h2>
-  <table id="ordersTable">
-    <tr>
-      <th>ID</th>
-      <th>User</th>
-      <th>Item</th>
-      <th>Size</th>
-      <th>Color</th>
-      <th>Qty</th>
-      <th>Status</th>
-      <th>Set Status</th>
-    </tr>
-  </table>
+  <table id="ordersTable"></table>
 </section>
 
 <script>
@@ -108,7 +99,23 @@ document.addEventListener("keydown", e => {
   }
 });
 
-// LOAD USERS
+// ANALYTICS
+function loadAnalytics() {
+  fetch("/api/admin/analytics")
+    .then(r => r.json())
+    .then(a => {
+      document.getElementById("totalOrders").innerText =
+        "Total Orders: " + a.totalOrders;
+      document.getElementById("todayOrders").innerText =
+        "Orders Today: " + a.todayOrders;
+      document.getElementById("totalItems").innerText =
+        "Items Sold: " + a.totalItems;
+      document.getElementById("popularItem").innerText =
+        "Popular Item: " + a.popularItem;
+    });
+}
+
+// USERS
 function loadUsers() {
   fetch("/api/admin/users")
     .then(r => r.json())
@@ -140,7 +147,7 @@ function loadUsers() {
     });
 }
 
-// LOAD ORDERS
+// ORDERS
 function loadOrders() {
   fetch("/api/admin/orders")
     .then(r => r.json())
@@ -149,7 +156,7 @@ function loadOrders() {
       table.innerHTML = `
         <tr>
           <th>ID</th><th>User</th><th>Item</th><th>Size</th>
-          <th>Color</th><th>Qty</th><th>Status</th><th>Set Status</th>
+          <th>Color</th><th>Qty</th><th>Status</th><th>Update</th>
         </tr>
       `;
       orders.forEach(o => {
@@ -176,28 +183,29 @@ function loadOrders() {
     });
 }
 
-// SET PREMIUM
 function setPremium(userId, premium) {
   fetch("/api/admin/set-premium", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ userId, premium })
-  }).then(() => loadUsers());
+  }).then(loadUsers);
 }
 
-// SET STATUS
 function setStatus(orderId, status) {
   fetch("/api/admin/order-status", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ orderId, status })
-  });
+  }).then(loadOrders);
 }
 
-// AUTO REFRESH
+loadAnalytics();
 loadUsers();
 loadOrders();
-setInterval(loadOrders, 5000);
+setInterval(() => {
+  loadAnalytics();
+  loadOrders();
+}, 5000);
 </script>
 
 </body>
