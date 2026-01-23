@@ -86,6 +86,29 @@ app.post("/admin/premium", async (req, res) => {
   );
   res.json({ success: true });
 });
+// Get all users
+app.get("/api/admin/users", async (req, res) => {
+  if (!req.session.user?.isAdmin)
+    return res.status(403).json({ error: "Admin only" });
+
+  const result = await pool.query(
+    "SELECT id, username, real_name, email, is_premium, is_admin FROM users ORDER BY id"
+  );
+  res.json(result.rows);
+});
+
+// Update order status
+app.post("/api/admin/order-status", async (req, res) => {
+  if (!req.session.user?.isAdmin)
+    return res.status(403).json({ error: "Admin only" });
+
+  const { orderId, status } = req.body;
+  await pool.query(
+    "UPDATE orders SET status=$1 WHERE id=$2",
+    [status, orderId]
+  );
+  res.json({ success: true });
+});
 
 /* NOTIFICATIONS */
 app.post("/admin/notify", async (req, res) => {
