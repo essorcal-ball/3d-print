@@ -1,322 +1,203 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Ison 3D</title>
-  <link rel="stylesheet" href="style.css" />
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
-                  url("/background.jpg") center/cover no-repeat fixed;
-      color: white;
-    }
+<meta charset="UTF-8">
+<title>Ison 3D — Admin</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    header {
-      background: #1f2b1f;
-      padding: 15px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    header h1 {
-      color: orange;
-      margin: 0;
-    }
-
-    nav button {
-      margin-left: 8px;
-      padding: 8px 14px;
-      background: #2e4f2e;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: transform 0.2s, background 0.2s;
-    }
-
-    nav button:hover {
-      transform: scale(1.1);
-      background: orange;
-      color: black;
-    }
-
-    section {
-      padding: 25px;
-      display: none;
-      animation: fadeIn 0.8s ease;
-    }
-
-    section.active {
-      display: block;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
-    .card {
-      background: rgba(0,0,0,0.7);
-      padding: 20px;
-      border-radius: 10px;
-      max-width: 500px;
-      margin-bottom: 20px;
-    }
-
-    input, select, textarea {
-      width: 100%;
-      padding: 8px;
-      margin-top: 8px;
-      border-radius: 6px;
-      border: none;
-    }
-
-    button.main {
-      margin-top: 15px;
-      padding: 10px;
-      width: 100%;
-      background: orange;
-      color: black;
-      border: none;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-
-    button.main:hover {
-      transform: scale(1.08);
-    }
-
-    .premium-locked {
-      opacity: 0.5;
-      pointer-events: none;
-      position: relative;
-    }
-
-    .premium-locked::after {
-      content: "🔒 Premium Only";
-      position: absolute;
-      top: 40%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: black;
-      padding: 6px 10px;
-      border-radius: 6px;
-      color: orange;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: rgba(0,0,0,0.7);
-    }
-
-    th, td {
-      border: 1px solid #444;
-      padding: 8px;
-      text-align: center;
-    }
-
-    th {
-      background: #2e4f2e;
-      color: orange;
-    }
-  </style>
+<style>
+body {
+  margin: 0;
+  background: #0b0b0b;
+  color: white;
+  font-family: Arial, sans-serif;
+  animation: fadeIn 0.6s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+header {
+  background: black;
+  padding: 14px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: bold;
+}
+section {
+  max-width: 1100px;
+  margin: auto;
+  padding: 20px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+th, td {
+  border: 1px solid #333;
+  padding: 8px;
+  text-align: center;
+}
+th {
+  background: #111;
+}
+button {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+button:hover {
+  transform: scale(1.1);
+}
+.green { background: #00aa55; color: white; }
+.blue { background: #0077ff; color: white; }
+.orange { background: #ff8800; color: black; }
+.gray { background: #444; color: white; }
+</style>
 </head>
 
 <body>
 
-<header>
-  <h1>Ison 3D</h1>
-  <nav>
-    <button onclick="show('home')">Home</button>
-    <button onclick="show('login')" id="loginBtn">Login</button>
-    <button onclick="show('register')" id="registerBtn">Create Account</button>
-    <button onclick="show('notifications')" id="notifBtn" style="display:none;">Notifications</button>
-    <button onclick="logout()" id="logoutBtn" style="display:none;">Logout</button>
-  </nav>
-</header>
+<header>Ison 3D — Admin Dashboard</header>
 
-<!-- HOME -->
-<section id="home" class="active">
-  <div class="card">
-    <h2>Welcome to Ison 3D</h2>
-    <p>Custom 3D printed toys & fidgets. Cash payment after ordering.</p>
+<section>
+  <button class="gray" onclick="location.href='/'">⬅ Back to Home</button>
 
-    <button class="main" onclick="show('order')">Order a 3D Print</button>
-    <button class="main" onclick="show('premium')">Premium Account – $2</button>
-  </div>
-</section>
+  <h2>Accounts</h2>
+  <table id="usersTable">
+    <tr>
+      <th>ID</th>
+      <th>Username</th>
+      <th>Real Name</th>
+      <th>Email</th>
+      <th>Premium</th>
+      <th>Admin</th>
+      <th>Actions</th>
+    </tr>
+  </table>
 
-<!-- LOGIN -->
-<section id="login">
-  <div class="card">
-    <h2>Login</h2>
-    <input id="loginUser" placeholder="Username" />
-    <input id="loginPass" type="password" placeholder="Password" />
-    <button class="main" onclick="login()">Login</button>
-  </div>
-</section>
-
-<!-- REGISTER -->
-<section id="register">
-  <div class="card">
-    <h2>Create Account</h2>
-    <p><b>Real name required so we know who to deliver to.</b></p>
-    <input id="regName" placeholder="Real Name (Required)" />
-    <input id="regUser" placeholder="Username" />
-    <input id="regPass" type="password" placeholder="Password" />
-    <button class="main" onclick="register()">Create Account</button>
-  </div>
-</section>
-
-<!-- ORDER -->
-<section id="order">
-  <div class="card">
-    <h2>Order</h2>
-
-    <select id="model">
-      <option value="Spiral Fidget - Small ($2)">Spiral Fidget - Small ($2)</option>
-      <option value="Spiral Fidget - Medium ($3.50)">Spiral Fidget - Medium ($3.50)</option>
-      <option value="Spiral Fidget - Large ($5)">Spiral Fidget - Large ($5)</option>
-
-      <option value="Articulated Octopus - Small ($2.50)">Articulated Octopus - Small ($2.50)</option>
-      <option value="Articulated Octopus - Medium ($4)">Articulated Octopus - Medium ($4)</option>
-      <option value="Articulated Octopus - Large ($6)">Articulated Octopus - Large ($6)</option>
-
-      <option value="Infinity Cube - Small ($2)">Infinity Cube - Small ($2)</option>
-      <option value="Infinity Cube - Medium ($3.50)">Infinity Cube - Medium ($3.50)</option>
-      <option value="Infinity Cube - Large ($5)">Infinity Cube - Large ($5)</option>
-
-      <option value="Invertible Star - Small ($2)">Invertible Star - Small ($2)</option>
-      <option value="Invertible Star - Medium ($4)">Invertible Star - Medium ($4)</option>
-      <option value="Invertible Star - Large ($6)">Invertible Star - Large ($6)</option>
-
-      <option value="Articulated Snake - Small ($4)">Articulated Snake - Small ($4)</option>
-      <option value="Articulated Snake - Medium ($7)">Articulated Snake - Medium ($7)</option>
-      <option value="Articulated Snake - Large ($10)">Articulated Snake - Large ($10)</option>
-    </select>
-
-    <select>
-      <option>White</option>
-      <option>Army Green</option>
-      <option>Black</option>
-      <option>Light Blue</option>
-      <option>Silver</option>
-      <option>Orange</option>
-      <option>Red</option>
-    </select>
-
-    <input type="number" min="1" value="1" />
-
-    <div id="premiumOptions" class="premium-locked">
-      <textarea placeholder="Special Request"></textarea>
-      <label><input type="checkbox" /> Two Colors</label>
-    </div>
-
-    <button class="main" onclick="placeOrder()">Place Order</button>
-  </div>
-</section>
-
-<!-- PREMIUM -->
-<section id="premium">
-  <div class="card">
-    <h2>Premium Account</h2>
-    <p>$2 one-time. Unlock special requests and build requests.</p>
-    <button class="main" onclick="buyPremium()">Order Premium</button>
-  </div>
-</section>
-
-<!-- NOTIFICATIONS -->
-<section id="notifications">
-  <div class="card">
-    <h2>Your Notifications</h2>
-    <pre id="notifBox"></pre>
-  </div>
+  <h2>Orders</h2>
+  <table id="ordersTable">
+    <tr>
+      <th>ID</th>
+      <th>User</th>
+      <th>Item</th>
+      <th>Size</th>
+      <th>Color</th>
+      <th>Qty</th>
+      <th>Status</th>
+      <th>Set Status</th>
+    </tr>
+  </table>
 </section>
 
 <script>
-let currentUser = null;
+// ADMIN SHORTCUT
+document.addEventListener("keydown", e => {
+  if (e.ctrlKey && e.key.toLowerCase() === "a") {
+    e.preventDefault();
+    fetch("/api/is-admin")
+      .then(r => r.json())
+      .then(d => {
+        if (d.admin) location.href = "/admin.html";
+        else alert("Admin only");
+      });
+  }
+});
 
-function show(id) {
-  document.querySelectorAll("section").forEach(s => s.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
+// LOAD USERS
+function loadUsers() {
+  fetch("/api/admin/users")
+    .then(r => r.json())
+    .then(users => {
+      const table = document.getElementById("usersTable");
+      table.innerHTML = `
+        <tr>
+          <th>ID</th><th>Username</th><th>Real Name</th>
+          <th>Email</th><th>Premium</th><th>Admin</th><th>Actions</th>
+        </tr>
+      `;
+      users.forEach(u => {
+        table.innerHTML += `
+          <tr>
+            <td>${u.id}</td>
+            <td>${u.username}</td>
+            <td>${u.real_name}</td>
+            <td>${u.email || ""}</td>
+            <td>${u.is_premium ? "Yes" : "No"}</td>
+            <td>${u.is_admin ? "Yes" : "No"}</td>
+            <td>
+              <button class="green" onclick="setPremium(${u.id}, ${!u.is_premium})">
+                ${u.is_premium ? "Remove Premium" : "Make Premium"}
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+    });
 }
 
-function register() {
-  fetch("/register", {
+// LOAD ORDERS
+function loadOrders() {
+  fetch("/api/admin/orders")
+    .then(r => r.json())
+    .then(orders => {
+      const table = document.getElementById("ordersTable");
+      table.innerHTML = `
+        <tr>
+          <th>ID</th><th>User</th><th>Item</th><th>Size</th>
+          <th>Color</th><th>Qty</th><th>Status</th><th>Set Status</th>
+        </tr>
+      `;
+      orders.forEach(o => {
+        table.innerHTML += `
+          <tr>
+            <td>${o.id}</td>
+            <td>${o.real_name}</td>
+            <td>${o.item}</td>
+            <td>${o.size}</td>
+            <td>${o.color}</td>
+            <td>${o.quantity}</td>
+            <td>${o.status}</td>
+            <td>
+              <select onchange="setStatus(${o.id}, this.value)">
+                <option>Pending Payment</option>
+                <option>Printing</option>
+                <option>Ready</option>
+                <option>Delivered</option>
+              </select>
+            </td>
+          </tr>
+        `;
+      });
+    });
+}
+
+// SET PREMIUM
+function setPremium(userId, premium) {
+  fetch("/api/admin/set-premium", {
     method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({
-      realName: regName.value,
-      username: regUser.value,
-      password: regPass.value
-    })
-  }).then(r=>r.json()).then(d=>{
-    if(d.error) alert(d.error);
-    else alert("Account created!");
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ userId, premium })
+  }).then(() => loadUsers());
+}
+
+// SET STATUS
+function setStatus(orderId, status) {
+  fetch("/api/admin/order-status", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ orderId, status })
   });
 }
 
-function login() {
-  fetch("/login", {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({
-      username: loginUser.value,
-      password: loginPass.value
-    })
-  }).then(r=>r.json()).then(d=>{
-    if(d.error) return alert(d.error);
-    currentUser = d;
-    loginBtn.style.display = "none";
-    registerBtn.style.display = "none";
-    logoutBtn.style.display = "inline-block";
-    notifBtn.style.display = "inline-block";
-    if (d.premium) document.getElementById("premiumOptions").classList.remove("premium-locked");
-    alert("Logged in as " + d.realName);
-    show("home");
-  });
-}
-
-function logout() {
-  location.reload();
-}
-
-function placeOrder() {
-  if (!currentUser) return alert("Login required");
-  fetch("/order", {
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({
-      user: currentUser.username,
-      item: model.value
-    })
-  }).then(()=>alert("Order placed. Pay in cash."));
-}
-
-function buyPremium() {
-  if (!currentUser) return alert("Login required");
-  fetch("/order", {
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({
-      user: currentUser.username,
-      item: "Premium Account ($2)"
-    })
-  }).then(()=>alert("Premium order sent. Pay first."));
-}
-
-notifBtn.onclick = () => {
-  fetch("/notifications/" + currentUser.username)
-    .then(r=>r.json())
-    .then(d=>notifBox.textContent = JSON.stringify(d,null,2));
-  show("notifications");
-};
+// AUTO REFRESH
+loadUsers();
+loadOrders();
+setInterval(loadOrders, 5000);
 </script>
 
 </body>
