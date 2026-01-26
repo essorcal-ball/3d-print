@@ -1,177 +1,59 @@
 import express from "express";
-import pkg from "pg";
-const { Pool } = pkg;
+import nodemailer from "nodemailer";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Needed for __dirname in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 app.use(express.json());
-app.use(express.static("public"));
+app.use(express.static(path.join(__dirname, "public")));
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
-});
-
-/* CREATE TABLES IF NOT EXISTS */
-await pool.query(`
-CREATE TABLE IF NOT EXISTS accounts (
-  id SERIAL PRIMARY KEY,
-  real_name TEXT NOT NULL,
-  username TEXT UNIQUE NOT NULL,
-  password TEXT NOT NULL,
-  premium BOOLEAN DEFAULT false
-);
-
-CREATE TABLE IF NOT EXISTS orders (
-  id SERIAL PRIMARY KEY,
-  username TEXT,
-  item TEXT,
-  date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS notifications (
-  id SERIAL PRIMARY KEY,
-  username TEXT,
-  message TEXT,
-  date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-`);
-
-/* ACCOUNTS */
-app.post("/register", async (req, res) => {
-  const { realName, username, password } = req.body;
-  try {
-    await pool.query(
-      "INSERT INTO accounts (real_name, username, password) VALUES ($1,$2,$3)",
-      [realName, username, password]
-    );
-    res.json({ success: true });
-  } catch {
-    res.json({ error: "Username already exists" });
+// EMAIL SETUP
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.ORDER_EMAIL,
+    pass: process.env.ORDER_EMAIL_PASSWORD
   }
 });
 
-app.post("/login", async (req, res) => {
-  const { username, password } = req.body;
-  const r = await pool.query(
-    "SELECT real_name, username, premium FROM accounts WHERE username=$1 AND password=$2",
-    [username, password]
-  );
-  r.rows.length ? res.json(r.rows[0]) : res.json({ error: "Invalid login" });
-});
-
-/* ORDERS */
+// ORDER ENDPOINT
 app.post("/order", async (req, res) => {
-  await pool.query(
-    "INSERT INTO orders (username, item) VALUES ($1,$2)",
-    [req.body.user, req.body.item]
-  );
-  res.json({ success: true });
+  try {
+    const order = req.body;
+
+    const emailHTML = `
+      <h2>🧾 New Order - Ison 3D</h2>
+      <p><strong>Name:</strong> ${order.name}</p>
+      <p><strong>Username:</strong> ${order.username}</p>
+      <p><strong>Item:</strong> ${order.item}</p>
+      <p><strong>Size:</strong> ${order.size}</p>
+      <p><strong>Color:</strong> ${order.color}</p>
+      <p><strong>Quantity:</strong> ${order.quantity}</p>
+      <p><strong>Premium:</strong> ${order.premium}</p>
+      <p><strong>Special Request:</strong> ${order.special || "None"}</p>
+      <p><strong>Total Cost:</strong> $${order.total}</p>
+    `;
+
+    await transporter.sendMail({
+      from: `"Ison 3D Orders" <${process.env.ORDER_EMAIL}>`,
+      to: process.env.ORDER_EMAIL,
+      subject: "New Ison 3D Order",
+      html: emailHTML
+    });
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false });
+  }
 });
 
-/* ADMIN */
-app.get("/admin/orders", async (req, res) => {
-  const r = await pool.query("SELECT * FROM orders ORDER BY date DESC");
-  res.json(r.rows);
+app.listen(PORT, () => {
+  console.log("Server running on port", PORT);
 });
-
-app.get("/admin/accounts", async (req, res) => {
-  const r = await pool.query("SELECT username, real_name, premium FROM accounts");
-  res.json(r.rows);
-});
-
-app.post("/admin/premium", async (req, res) => {
-  await pool.query(
-    "UPDATE accounts SET premium=$1 WHERE username=$2",
-    [req.body.premium, req.body.username]
-  );
-  res.json({ success: true });
-});
-
-// Get all users
-app.post("/api/admin/order-status", async (req, res) => {
-  if (!req.session.user?.isAdmin)
-    return res.status(403).json({ error: "Admin only" });
-
-  const { orderId, status } = req.body;
-
-  const order = await pool.query(
-    "SELECT user_id FROM orders WHERE id=$1",
-    [orderId]
-  );
-
-  await pool.query(
-    "UPDATE orders SET status=$1 WHERE id=$2",
-    [status, orderId]
-  );
-
-  // Auto notification
-  await pool.query(
-    "INSERT INTO notifications (user_id, message) VALUES ($1,$2)",
-    [
-      order.rows[0].user_id,
-      `Your order #${orderId} status is now: ${status}`
-    ]
-  );
-
-  res.json({ success: true });
-});
-
-// ANALYTICS DASHBOARD
-app.get("/api/admin/analytics", async (req, res) => {
-  if (!req.session.user?.isAdmin)
-    return res.status(403).json({ error: "Admin only" });
-
-  const totalOrders = await pool.query("SELECT COUNT(*) FROM orders");
-  const todayOrders = await pool.query(
-    "SELECT COUNT(*) FROM orders WHERE created_at::date = CURRENT_DATE"
-  );
-  const totalItems = await pool.query(
-    "SELECT COALESCE(SUM(quantity),0) FROM orders"
-  );
-  const popular = await pool.query(`
-    SELECT item, COUNT(*) AS count
-    FROM orders
-    GROUP BY item
-    ORDER BY count DESC
-    LIMIT 1
-  `);
-
-  res.json({
-    totalOrders: totalOrders.rows[0].count,
-    todayOrders: todayOrders.rows[0].count,
-    totalItems: totalItems.rows[0].coalesce,
-    popularItem: popular.rows[0]?.item || "None yet"
-  });
-});
-
-// Update order status
-app.post("/api/admin/order-status", async (req, res) => {
-  if (!req.session.user?.isAdmin)
-    return res.status(403).json({ error: "Admin only" });
-
-  const { orderId, status } = req.body;
-  await pool.query(
-    "UPDATE orders SET status=$1 WHERE id=$2",
-    [status, orderId]
-  );
-  res.json({ success: true });
-});
-
-/* NOTIFICATIONS */
-app.post("/admin/notify", async (req, res) => {
-  await pool.query(
-    "INSERT INTO notifications (username, message) VALUES ($1,$2)",
-    [req.body.user, req.body.message]
-  );
-  res.json({ success: true });
-});
-
-app.get("/notifications/:user", async (req, res) => {
-  const r = await pool.query(
-    "SELECT message, date FROM notifications WHERE username=$1 ORDER BY date DESC",
-    [req.params.user]
-  );
-  res.json(r.rows);
-});
-
-app.listen(3000, () => console.log("Ison 3D running with PostgreSQL"));
