@@ -174,15 +174,22 @@
 <!-- LOGIN MODAL -->
 <div class="modal" id="loginModal">
   <div class="modal-box">
-    <h3>Login / Register</h3>
-    <input id="realname" placeholder="Real Name">
-    <input id="address" placeholder="Address">
+    <h3 id="modalTitle">Login to continue</h3>
+
+    <input id="realname" placeholder="Real Name" style="display:none;">
+    <input id="address" placeholder="Address" style="display:none;">
+
     <input id="username" placeholder="Username">
     <input id="password" type="password" placeholder="Password">
 
-    <span class="link" onclick="whyInfo()">Why we need your real name and address?</span>
+    <span id="whyLink" class="link" onclick="whyInfo()" style="display:none;">
+      Why we need your real name and address?
+    </span>
 
-    <button onclick="login()">Login</button>
+    <button id="loginActionBtn" onclick="login()">Login</button>
+    <button onclick="switchMode()">Create Account</button>
+    <button onclick="closeLogin()">Back</button>
+
     <p id="loginMsg"></p>
   </div>
 </div>
@@ -200,6 +207,7 @@
 
 <script>
 let currentUser = null
+let mode = "login"
 
 function openLogin() {
   document.getElementById("loginModal").style.display = "flex"
@@ -207,6 +215,25 @@ function openLogin() {
 
 function closeLogin() {
   document.getElementById("loginModal").style.display = "none"
+  document.getElementById("loginMsg").innerText = ""
+}
+
+function switchMode() {
+  if (mode === "login") {
+    mode = "register"
+    document.getElementById("modalTitle").innerText = "Create Account"
+    document.getElementById("realname").style.display = "block"
+    document.getElementById("address").style.display = "block"
+    document.getElementById("whyLink").style.display = "block"
+    document.getElementById("loginActionBtn").innerText = "Create Account"
+  } else {
+    mode = "login"
+    document.getElementById("modalTitle").innerText = "Login to continue"
+    document.getElementById("realname").style.display = "none"
+    document.getElementById("address").style.display = "none"
+    document.getElementById("whyLink").style.display = "none"
+    document.getElementById("loginActionBtn").innerText = "Login"
+  }
 }
 
 function whyInfo() {
@@ -218,10 +245,14 @@ function closeInfo() {
 }
 
 async function login() {
-  const res = await fetch("/login", {
+  const endpoint = mode === "login" ? "/login" : "/register"
+
+  const res = await fetch(endpoint, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
+      realname: realname.value,
+      address: address.value,
       username: username.value,
       password: password.value
     })
@@ -237,7 +268,7 @@ async function login() {
     document.getElementById("orderSection").style.display = "block"
     closeLogin()
   } else {
-    document.getElementById("loginMsg").innerText = "Login failed"
+    document.getElementById("loginMsg").innerText = data.message || "Action failed"
   }
 }
 
@@ -247,22 +278,6 @@ function logout() {
   document.getElementById("loginBtn").style.display = "inline-block"
   document.getElementById("logoutBtn").style.display = "none"
   document.getElementById("orderSection").style.display = "none"
-}
-
-async function sendOrder() {
-  const res = await fetch("/order", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      item: item.value,
-      colors: colors.value,
-      quantity: quantity.value,
-      notes: notes.value
-    })
-  })
-
-  const data = await res.json()
-  orderMsg.innerText = data.success ? "Order sent successfully!" : "Error sending order"
 }
 </script>
 
