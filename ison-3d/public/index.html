@@ -1,226 +1,97 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8" />
-<title>Ison 3D</title>
-
-<style>
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: linear-gradient(120deg, #1b1b1b, #2f4f2f);
-  color: white;
-  overflow-x: hidden;
-}
-
-.fade-in {
-  animation: fade 1.5s ease forwards;
-}
-@keyframes fade {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-header {
-  background: black;
-  padding: 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-button {
-  background: orange;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: 0.2s ease;
-}
-button:hover {
-  transform: scale(1.1);
-  background: #ffb84d;
-}
-
-.card {
-  background: #222;
-  padding: 20px;
-  margin: 20px;
-  border-radius: 10px;
-  max-width: 400px;
-}
-
-select, input {
-  width: 100%;
-  padding: 8px;
-  border-radius: 5px;
-  border: none;
-  margin-top: 5px;
-}
-
-.locked {
-  opacity: 0.4;
-  pointer-events: none;
-}
-
-.hidden {
-  display: none;
-}
-</style>
+  <title>Ison 3D Login</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #111;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .box {
+      background: #222;
+      padding: 20px;
+      border-radius: 8px;
+      width: 300px;
+      text-align: center;
+    }
+    input, button, textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 10px;
+      border-radius: 5px;
+      border: none;
+    }
+    button {
+      background: #00ccff;
+      cursor: pointer;
+    }
+  </style>
 </head>
-
 <body>
 
-<header>
-  <h2>Ison 3D</h2>
-  <div>
-    <span id="userDisplay"></span>
-    <button onclick="showLogin()">Login</button>
-  </div>
-</header>
-
-<div id="home" class="fade-in">
-  <div class="card">
-    <h2>3D Printed Toys & Fidgets</h2>
-    <p>Custom prints, cash payment, local delivery</p>
-    <button onclick="showOrder()">Order Now</button>
-  </div>
-
-  <div class="card">
-    <h3>Premium Account - $2</h3>
-    <p>Unlock special requests & two-color prints</p>
-    <button onclick="buyPremium()">Request Premium</button>
-  </div>
+<div class="box" id="loginBox">
+  <h2>Admin Login</h2>
+  <input id="user" placeholder="Username">
+  <input id="pass" type="password" placeholder="Password">
+  <button onclick="login()">Login</button>
+  <p id="loginMsg"></p>
 </div>
 
-<div id="login" class="hidden">
-  <div class="card">
-    <h3>Login / Create Account</h3>
-    <p><b>Use your REAL NAME for delivery</b></p>
-    <input id="realName" placeholder="Real Name" required>
-    <input id="username" placeholder="Username">
-    <button onclick="login()">Continue</button>
-    <button onclick="goHome()">Back</button>
-  </div>
-</div>
-
-<div id="order" class="hidden">
-  <div class="card">
-    <h3>Place Order</h3>
-
-    <label>Model</label>
-    <select id="item">
-      <option>Spiral Fidget</option>
-      <option>Articulated Octopus</option>
-      <option>Infinity Cube</option>
-      <option>Invertible Star</option>
-      <option>Articulated Snake</option>
-    </select>
-
-    <label>Size</label>
-    <select id="size">
-      <option>Small</option>
-      <option>Medium</option>
-      <option>Large</option>
-    </select>
-
-    <label>Color</label>
-    <select id="color">
-      <option>White</option>
-      <option>Army Green</option>
-      <option>Black</option>
-      <option>Light Blue</option>
-      <option>Silver</option>
-      <option>Orange</option>
-      <option>Red</option>
-    </select>
-
-    <label>Quantity</label>
-    <input id="quantity" type="number" value="1">
-
-    <div id="premiumBox" class="locked">
-      <label>Special Request (Premium)</label>
-      <input id="special" placeholder="Describe custom build">
-    </div>
-
-    <button onclick="submitOrder()">Submit Order</button>
-    <button onclick="goHome()">Back</button>
-  </div>
+<div class="box" id="orderBox" style="display:none;">
+  <h2>New Order</h2>
+  <input id="name" placeholder="Name">
+  <input id="email" placeholder="Email">
+  <input id="item" placeholder="Item">
+  <input id="colors" placeholder="Color(s)">
+  <input id="quantity" placeholder="Quantity">
+  <textarea id="notes" placeholder="Notes"></textarea>
+  <button onclick="sendOrder()">Send Order</button>
+  <p id="orderMsg"></p>
 </div>
 
 <script>
-let user = null;
-let premium = false;
+async function login() {
+  const res = await fetch("/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      username: document.getElementById("user").value,
+      password: document.getElementById("pass").value
+    })
+  })
 
-document.addEventListener("keydown", e => {
-  if (e.ctrlKey && e.key === "a") {
-    const pass = prompt("Admin Password:");
-    if (pass === "stego") {
-      alert("Admin access (email system active)");
-    }
+  const data = await res.json()
+
+  if (data.success) {
+    document.getElementById("loginBox").style.display = "none"
+    document.getElementById("orderBox").style.display = "block"
+  } else {
+    document.getElementById("loginMsg").innerText = "Login failed"
   }
-});
-
-function showLogin() {
-  home.classList.add("hidden");
-  login.classList.remove("hidden");
 }
 
-function showOrder() {
-  if (!user) return alert("Please login first");
-  home.classList.add("hidden");
-  order.classList.remove("hidden");
-}
-
-function goHome() {
-  login.classList.add("hidden");
-  order.classList.add("hidden");
-  home.classList.remove("hidden");
-}
-
-function login() {
-  const name = realName.value.trim();
-  if (!name) return alert("Real name required for delivery");
-
-  user = {
-    name,
-    username: username.value || "Guest"
-  };
-
-  userDisplay.innerText = user.name;
-  login.classList.add("hidden");
-  home.classList.remove("hidden");
-}
-
-function buyPremium() {
-  alert("Premium request sent — pay $2 in cash to activate");
-}
-
-async function submitOrder() {
-  const data = {
-    name: user.name,
-    username: user.username,
-    item: item.value,
-    size: size.value,
-    color: color.value,
-    quantity: quantity.value,
-    premium: premium ? "Yes" : "No",
-    special: special.value,
-    total: "Calculated on pickup"
-  };
-
+async function sendOrder() {
   const res = await fetch("/order", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data)
-  });
+    body: JSON.stringify({
+      name: name.value,
+      email: email.value,
+      item: item.value,
+      colors: colors.value,
+      quantity: quantity.value,
+      notes: notes.value
+    })
+  })
 
-  if (res.ok) {
-    alert("Order placed! You will receive delivery info soon.");
-    goHome();
-  } else {
-    alert("Order failed. Try again.");
-  }
+  const data = await res.json()
+  document.getElementById("orderMsg").innerText =
+    data.success ? "Order sent!" : "Error sending order"
 }
 </script>
 
