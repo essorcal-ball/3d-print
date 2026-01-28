@@ -1,69 +1,122 @@
 import express from "express"
+import session from "express-session"
 import nodemailer from "nodemailer"
 import path from "path"
-import { fileURLToPath } from "url"
+import dotenv from "dotenv"
+
+dotenv.config()
 
 const app = express()
 const PORT = process.env.PORT || 10000
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
-app.use(express.static(path.join(__dirname, "public")))
 
-const ADMIN_USER = process.env.ADMIN_USER
-const ADMIN_PASS = process.env.ADMIN_PASS
+app.use(
+  session({
+    secret: "ison3d-secret",
+    resave: false,
+    saveUninitialized: true
+  })
+)
 
-// LOGIN ROUTE
-app.post("/login", (req, res) => {
-  const { username, password } = req.body
-
-  if (username === ADMIN_USER && password === ADMIN_PASS) {
-    res.json({ success: true })
-  } else {
-    res.json({ success: false, message: "Invalid login" })
-  }
-})
+// Serve frontend
+app.use(express.static(path.join(process.cwd(), "public")))
 
 // EMAIL TRANSPORT
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: process.env.ORDER_EMAIL,
-    pass: process.env.ORDER_EMAIL_PASSWORD
+    user: process.env.BUSINESS_EMAIL,
+    pass: process.env.BUSINESS_EMAIL_PASSWORD
   }
 })
 
-// ORDER ROUTE
-app.post("/order", async (req, res) => {
-  const orderText = `
-NEW ISON 3D ORDER
+// ---------------- ROUTES ----------------
 
-Item: ${req.body.item}
-Colors: ${req.body.colors}
-Quantity: ${req.body.quantity}
+app.post("/register", async (req, res) => {
+  const { realname, address, username, password } = req.body
 
-Notes:
-${req.body.notes}
+  if (!realname || !address || !username || !password) {
+    return res.json({ success: false, message: "All fields required" })
+  }
+
+  req.session.user = { realname, address, username }
+
+  await transporter.sendMail({
+    from: `"Ison 3D Website" <${process.env.BUSINESS_EMAIL}>`,
+    to: process.env.BUSINESS_EMAIL,
+    subject: "🆕 New Account Created",
+    text: `
+NEW ACCOUNT
+
+Name: ${realname}
+Address: ${address}
+Username: ${username}
 `
+  })
 
-  try {
-    await transporter.sendMail({
-      from: process.env.ORDER_EMAIL,
-      to: process.env.ORDER_EMAIL,
-      subject: "New Ison 3D Order",
-      text: orderText
-    })
-
-    res.json({ success: true })
-  } catch (err) {
-    console.error(err)
-    res.json({ success: false })
-  }
+  res.json({ success: true, name: realname, address })
 })
 
+app.post("/login", (req, res) => {
+  const { username, password } = req.body
+
+  if (!username || !password) {
+    return res.json({ success: false, message: "Missing login info" })
+  }
+
+  req.session.user = { username }
+
+  res.json({ success: true })
+})
+
+app.post("/order", async (req, res) => {
+  const { user, item, details } = req.body
+
+  if (!user || !item) {
+    return res.json({ success: false })
+  }
+
+  await transporter.sendMail({
+    from: `"Ison 3D Orders" <${process.env.BUSINESS_EMAIL}>`,
+    to: process.env.BUSINESS_EMAIL,
+    subject: "🖨️ New Order Received",
+    text: `
+NEW ORDER
+
+Name: ${user.name}
+Address: ${user.address}
+Username: ${user.username}
+
+Item: ${item}
+Details: ${details}
+`
+  })
+
+  res.json({ success: true })
+})
+
+app.post("/update-profile", async (req, res) => {
+  const { username, name, address } = req.body
+
+  await transporter.sendMail({
+    from: `"Ison 3D Profile Update" <${process.env.BUSINESS_EMAIL}>`,
+    to: process.env.BUSINESS_EMAIL,
+    subject: "✏️ Profile Updated",
+    text: `
+PROFILE UPDATE
+
+Username: ${username}
+New Name: ${name}
+New Address: ${address}
+`
+  })
+
+  res.json({ success: true })
+})
+
+// ---------------- START SERVER ----------------
 app.listen(PORT, () => {
-  console.log("Server running on port", PORT)
+  console.log("Ison 3D running on port " + PORT)
 })
