@@ -1,80 +1,106 @@
 import express from "express";
-);
+import session from "express-session";
+import nodemailer from "nodemailer";
 
+// Create Express app
+const app = express();
 
+// Middleware
+app.use(express.json());
+app.use(session({
+  secret: process.env.SESSION_SECRET || "secret",
+  resave: false,
+  saveUninitialized: true
+}));
+
+// In-memory users array
+const users = [];
+
+// Setup Nodemailer transporter
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
+
+// =========================
 // CREATE ACCOUNT
+// =========================
 app.post("/api/register", (req, res) => {
-const { name, address, username, password } = req.body;
+  const { name, address, username, password } = req.body;
 
+  const exists = users.find(u => u.username === username);
+  if (exists) return res.status(400).json({ error: "Username already exists" });
 
-const exists = users.find(u => u.username === username);
-if (exists) return res.status(400).json({ error: "Username already exists" });
+  const user = { name, address, username, password };
+  users.push(user);
 
-
-const user = { name, address, username, password };
-users.push(user);
-
-
-req.session.user = user;
-res.json({ success: true });
+  req.session.user = user;
+  res.json({ success: true });
 });
 
-
+// =========================
 // LOGIN
+// =========================
 app.post("/api/login", (req, res) => {
-const { username, password } = req.body;
+  const { username, password } = req.body;
 
+  const user = users.find(u => u.username === username && u.password === password);
+  if (!user) return res.status(401).json({ error: "Invalid login" });
 
-const user = users.find(u => u.username === username && u.password === password);
-if (!user) return res.status(401).json({ error: "Invalid login" });
-
-
-req.session.user = user;
-res.json({ success: true, name: user.name });
+  req.session.user = user;
+  res.json({ success: true, name: user.name });
 });
 
-
+// =========================
 // LOGOUT
+// =========================
 app.post("/api/logout", (req, res) => {
-req.session.destroy();
-res.json({ success: true });
+  req.session.destroy();
+  res.json({ success: true });
 });
 
-
+// =========================
 // ORDER EMAIL
+// =========================
 app.post("/api/order", async (req, res) => {
-if (!req.session.user) return res.status(403).json({ error: "Not logged in" });
+  if (!req.session.user) return res.status(403).json({ error: "Not logged in" });
 
+  const { model, color, notes } = req.body;
+  const user = req.session.user;
 
-const { model, color, notes } = req.body;
-const user = req.session.user;
-
-
-const mailOptions = {
-from: process.env.EMAIL_USER,
-to: process.env.ORDER_EMAIL,
-subject: "New Ison 3D Order",
-text: `
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: process.env.ORDER_EMAIL,
+    subject: "New Ison 3D Order",
+    text: `
 NEW ORDER
-
 
 Name: ${user.name}
 Address: ${user.address}
 Username: ${user.username}
 
-
 Model: ${model}
 Color: ${color}
 Notes: ${notes}
 `
-};
+  };
 
-
-await transporter.sendMail(mailOptions);
-res.json({ success: true });
+  try {
+    await transporter.sendMail(mailOptions);
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Error sending email:", err);
+    res.status(500).json({ error: "Failed to send email" });
+  }
 });
 
-
-app.listen(10000, () => {
-console.log("Ison 3D running on port 10000");
+// =========================
+// START SERVER
+// =========================
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => {
+  console.log(`Ison 3D running on port ${PORT}`);
 });
