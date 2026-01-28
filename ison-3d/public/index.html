@@ -1,376 +1,52 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Ison 3D Printing</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: white;
-      color: #111;
-    }
-
-    /* TOP BAR */
-    .navbar {
-      position: sticky;
-      top: 0;
-      background: white;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 15px 40px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      z-index: 1000;
-      <button id="profileBtn" onclick="openProfile()" style="display:none;">
-        Profile
-      </button>
-    }
-
-    .logo {
-      font-weight: bold;
-      font-size: 20px;
-      color: #00aaff;
-    }
-
-    .nav-right button {
-      background: #00aaff;
-      border: none;
-      color: white;
-      padding: 8px 16px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    /* HERO */
-    .hero {
-      padding: 80px 40px;
-      text-align: center;
-      animation: fadeIn 1.5s ease;
-    }
-
-    .hero h1 {
-      font-size: 48px;
-    }
-
-    .hero p {
-      max-width: 600px;
-      margin: auto;
-      font-size: 18px;
-      color: #444;
-    }
-
-    /* SECTIONS */
-    .section {
-      padding: 60px 40px;
-      max-width: 900px;
-      margin: auto;
-      animation: fadeIn 1.5s ease;
-    }
-
-    .card {
-      background: #f7f7f7;
-      padding: 20px;
-      border-radius: 10px;
-      margin-top: 20px;
-    }
-
-    /* PREMIUM */
-    .premium {
-      background: linear-gradient(135deg, #00aaff, #0066ff);
-      color: white;
-      border-radius: 15px;
-      padding: 40px;
-      text-align: center;
-      margin-top: 40px;
-    }
-
-    /* MODAL */
-    .modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.5);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 2000;
-    }
-
-    .modal-box {
-      background: white;
-      padding: 25px;
-      border-radius: 10px;
-      width: 300px;
-    }
-
-    input, textarea, button {
-      width: 100%;
-      margin-top: 10px;
-      padding: 8px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-
-    .link {
-      color: #00aaff;
-      font-size: 12px;
-      cursor: pointer;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-  </style>
+<title>Ison 3D</title>
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<!-- NAVBAR -->
-<div class="navbar">
-  <div class="logo">Ison 3D</div>
-  <div class="nav-right">
-    <span id="userDisplay"></span>
-    <button id="loginBtn" onclick="openLogin()">Login</button>
-    <button id="logoutBtn" style="display:none;" onclick="logout()">Logout</button>
-  </div>
+
+<div class="topbar">
+<div class="logo">ISON 3D</div>
+<div id="userArea">
+<button onclick="showLogin()">Login</button>
 </div>
-
-<!-- HERO -->
-<div class="hero">
-  <h1>Professional 3D Printing Solutions</h1>
-  <p>Custom fidgets, models, prototypes, and premium-quality prints designed just for you.</p>
-</div>
-
-<!-- SERVICES -->
-<div class="section">
-  <h2>Our Services</h2>
-  <div class="card">
-    ✔ Custom 3D Models<br>
-    ✔ High-Quality Fidget Toys<br>
-    ✔ Rapid Prototyping<br>
-    ✔ Business & School Orders
-  </div>
-
-  <!-- PREMIUM -->
-  <div class="premium">
-    <h2>Ison Premium</h2>
-    <p>Priority printing, premium materials, faster delivery, and exclusive design access.</p>
-    <p><strong>Upgrade your prints to the next level.</strong></p>
-  </div>
-</div>
-
-<!-- ORDER -->
-<div class="section" id="orderSection" style="display:none;">
-  <h2>Place an Order</h2>
-  <input id="item" placeholder="Item">
-  <input id="colors" placeholder="Color(s)">
-  <input id="quantity" placeholder="Quantity">
-  <textarea id="notes" placeholder="Notes"></textarea>
-  <button onclick="sendOrder()">Send Order</button>
-  <p id="orderMsg"></p>
-</div>
-
-<!-- LOGIN MODAL -->
-<div class="modal" id="loginModal">
-  <div class="modal-box">
-    <h3 id="modalTitle">Login to continue</h3>
-
-    <input id="realname" placeholder="Real Name" style="display:none;">
-    <input id="address" placeholder="Address" style="display:none;">
-
-    <input id="username" placeholder="Username">
-    <input id="password" type="password" placeholder="Password">
-
-    <p id="passwordHint" style="display:none;font-size:12px;color:gray;">
-      Password must be 8+ characters, include a capital letter and a number
-    </p>
-    
-    <span id="whyLink" class="link" onclick="whyInfo()" style="display:none;">
-      Why we need your real name and address?
-    </span>
-
-    <button id="loginActionBtn" onclick="login()">Login</button>
-    <button onclick="switchMode()">Create Account</button>
-    <button onclick="closeLogin()">Back</button>
-
-    <p id="loginMsg"></p>
-  </div>
-</div>
-
-  <div class="modal" id="profileModal">
-  <div class="modal-box">
-    <h3>Your Profile</h3>
-    <input id="profileName" placeholder="Real Name">
-    <input id="profileAddress" placeholder="Address">
-    <button onclick="saveProfile()">Save</button>
-    <button onclick="closeProfile()">Back</button>
-  </div>
 </div>
 
 
-<!-- INFO MODAL -->
-<div class="modal" id="infoModal">
-  <div class="modal-box">
-    <p>
-      We use your real name and address to verify your identity, ensure accurate order fulfillment,
-      and confirm that your prints are delivered to the correct person and location.
-    </p>
-    <button onclick="closeInfo()">Close</button>
-  </div>
+<div class="container fade">
+<h1>Login to Continue</h1>
+
+
+<div class="box" id="loginBox">
+<input id="loginUser" placeholder="Username">
+<input id="loginPass" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
+
+
+<p class="link" onclick="showRegister()">Create Account</p>
 </div>
 
-<script>
-let currentUser = null
-let mode = "login"
 
-const ADMIN_EMAIL = "yourbusinessemail@example.com"
-
-function openLogin() {
-  document.getElementById("loginModal").style.display = "flex"
-}
-
-function closeLogin() {
-  document.getElementById("loginModal").style.display = "none"
-  document.getElementById("loginMsg").innerText = ""
-}
-
-function switchMode() {
-  if (mode === "login") {
-    mode = "register"
-    modalTitle.innerText = "Create Account"
-    realname.style.display = "block"
-    address.style.display = "block"
-    whyLink.style.display = "block"
-    passwordHint.style.display = "block"
-    loginActionBtn.innerText = "Create Account"
-  } else {
-    mode = "login"
-    modalTitle.innerText = "Login to continue"
-    realname.style.display = "none"
-    address.style.display = "none"
-    whyLink.style.display = "none"
-    passwordHint.style.display = "none"
-    loginActionBtn.innerText = "Login"
-  }
-}
-
-function whyInfo() {
-  infoModal.style.display = "flex"
-}
-
-function closeInfo() {
-  infoModal.style.display = "none"
-}
-
-function validPassword(pass) {
-  return (
-    pass.length >= 8 &&
-    /[A-Z]/.test(pass) &&
-    /[0-9]/.test(pass)
-  )
-}
-
-async function login() {
-  if (mode === "register") {
-    if (!validPassword(password.value)) {
-      loginMsg.innerText =
-        "Password must be 8+ characters, include a number and a capital letter."
-      return
-    }
-  }
-
-  const res = await fetch(mode === "login" ? "/login" : "/register", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      realname: realname.value,
-      address: address.value,
-      username: username.value,
-      password: password.value
-    })
-  })
-
-  const data = await res.json()
-
-  if (data.success) {
-    currentUser = {
-      name: realname.value || data.name,
-      address: address.value || data.address,
-      username: username.value
-    }
-
-    userDisplay.innerText = currentUser.username
-    loginBtn.style.display = "none"
-    logoutBtn.style.display = "inline-block"
-    orderSection.style.display = "block"
-    profileBtn.style.display = "inline-block"
-    closeLogin()
-  } else {
-    loginMsg.innerText = data.message || "Action failed"
-  }
-}
-
-function logout() {
-  currentUser = null
-  userDisplay.innerText = ""
-  loginBtn.style.display = "inline-block"
-  logoutBtn.style.display = "none"
-  profileBtn.style.display = "none"
-  orderSection.style.display = "none"
-}
-
-function openProfile() {
-  document.getElementById("profileModal").style.display = "flex"
-  document.getElementById("profileName").value = currentUser.name
-  document.getElementById("profileAddress").value = currentUser.address
-}
-
-function closeProfile() {
-  document.getElementById("profileModal").style.display = "none"
-}
-
-async function saveProfile() {
-  const name = profileName.value
-  const addr = profileAddress.value
-
-  await fetch("/update-profile", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      username: currentUser.username,
-      name,
-      address: addr
-    })
-  })
-
-  currentUser.name = name
-  currentUser.address = addr
-  closeProfile()
-  alert("Profile updated — Ison 3D has been notified")
-}
-
-async function submitOrder() {
-  const item = document.getElementById("itemName").value
-  const details = document.getElementById("itemDetails").value
-
-  await fetch("/order", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      user: currentUser,
-      item,
-      details
-    })
-  })
-
-  alert("Order sent to Ison 3D. You'll receive updates soon.")
-}
-</script>
+<div class="box hidden" id="registerBox">
+<input id="regName" placeholder="Real Name">
+<input id="regAddress" placeholder="Address">
+<input id="regUser" placeholder="Username">
+<input id="regPass" type="password" placeholder="Password">
 
 
+<p class="link" onclick="alert('We need your real name and address to verify orders and ensure correct delivery.')">
+Why we need your real name and address
+</p>
+
+
+<button onclick="register()">Create Account</button>
+<p class="link" onclick="showLogin()">Back to Login</p>
+</div>
+</div>
+
+
+<script src="app.js"></script>
 </body>
 </html>
