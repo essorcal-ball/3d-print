@@ -1,0 +1,75 @@
+body {
+position: sticky;
+top: 0;
+background: #1f2d1f;
+color: orange;
+display: flex;
+justify-content: space-between;
+padding: 15px;
+}
+
+
+.logo {
+font-weight: bold;
+font-size: 20px;
+}
+
+
+button {
+background: orange;
+border: none;
+padding: 10px 15px;
+cursor: pointer;
+}
+
+
+.container {
+text-align: center;
+margin-top: 60px;
+}
+
+
+.box {
+background: #f3f3f3;
+padding: 20px;
+width: 300px;
+margin: auto;
+border-radius: 10px;
+}
+
+
+input, textarea {
+width: 100%;
+margin: 5px 0;
+padding: 8px;
+}
+
+
+.link {
+color: #1f2d1f;
+cursor: pointer;
+font-size: 14px;
+}
+
+
+.hidden {
+display: none;
+}
+
+
+.fade {
+animation: fadeIn 1s;
+}
+
+
+.premium {
+margin-top: 30px;
+border: 2px solid orange;
+padding: 15px;
+}
+
+
+@keyframes fadeIn {
+from { opacity: 0; transform: translateY(20px); }
+to { opacity: 1; transform: translateY(0); }
+}
