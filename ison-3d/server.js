@@ -1,122 +1,80 @@
-import express from "express"
-import session from "express-session"
-import nodemailer from "nodemailer"
-import path from "path"
-import dotenv from "dotenv"
+import express from "express";
+});
 
-dotenv.config()
 
-const app = express()
-const PORT = process.env.PORT || 10000
+// CREATE ACCOUNT
+app.post("/api/register", (req, res) => {
+const { name, address, username, password } = req.body;
 
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
 
-app.use(
-  session({
-    secret: "ison3d-secret",
-    resave: false,
-    saveUninitialized: true
-  })
-)
+const exists = users.find(u => u.username === username);
+if (exists) return res.status(400).json({ error: "Username already exists" });
 
-// Serve frontend
-app.use(express.static(path.join(process.cwd(), "public")))
 
-// EMAIL TRANSPORT
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.BUSINESS_EMAIL,
-    pass: process.env.BUSINESS_EMAIL_PASSWORD
-  }
-})
+const user = { name, address, username, password };
+users.push(user);
 
-// ---------------- ROUTES ----------------
 
-app.post("/register", async (req, res) => {
-  const { realname, address, username, password } = req.body
+req.session.user = user;
+res.json({ success: true });
+});
 
-  if (!realname || !address || !username || !password) {
-    return res.json({ success: false, message: "All fields required" })
-  }
 
-  req.session.user = { realname, address, username }
+// LOGIN
+app.post("/api/login", (req, res) => {
+const { username, password } = req.body;
 
-  await transporter.sendMail({
-    from: `"Ison 3D Website" <${process.env.BUSINESS_EMAIL}>`,
-    to: process.env.BUSINESS_EMAIL,
-    subject: "🆕 New Account Created",
-    text: `
-NEW ACCOUNT
 
-Name: ${realname}
-Address: ${address}
-Username: ${username}
-`
-  })
+const user = users.find(u => u.username === username && u.password === password);
+if (!user) return res.status(401).json({ error: "Invalid login" });
 
-  res.json({ success: true, name: realname, address })
-})
 
-app.post("/login", (req, res) => {
-  const { username, password } = req.body
+req.session.user = user;
+res.json({ success: true, name: user.name });
+});
 
-  if (!username || !password) {
-    return res.json({ success: false, message: "Missing login info" })
-  }
 
-  req.session.user = { username }
+// LOGOUT
+app.post("/api/logout", (req, res) => {
+req.session.destroy();
+res.json({ success: true });
+});
 
-  res.json({ success: true })
-})
 
-app.post("/order", async (req, res) => {
-  const { user, item, details } = req.body
+// ORDER EMAIL
+app.post("/api/order", async (req, res) => {
+if (!req.session.user) return res.status(403).json({ error: "Not logged in" });
 
-  if (!user || !item) {
-    return res.json({ success: false })
-  }
 
-  await transporter.sendMail({
-    from: `"Ison 3D Orders" <${process.env.BUSINESS_EMAIL}>`,
-    to: process.env.BUSINESS_EMAIL,
-    subject: "🖨️ New Order Received",
-    text: `
+const { model, color, notes } = req.body;
+const user = req.session.user;
+
+
+const mailOptions = {
+from: process.env.EMAIL_USER,
+to: process.env.ORDER_EMAIL,
+subject: "New Ison 3D Order",
+text: `
 NEW ORDER
+
 
 Name: ${user.name}
 Address: ${user.address}
 Username: ${user.username}
 
-Item: ${item}
-Details: ${details}
+
+Model: ${model}
+Color: ${color}
+Notes: ${notes}
 `
-  })
+};
 
-  res.json({ success: true })
-})
 
-app.post("/update-profile", async (req, res) => {
-  const { username, name, address } = req.body
+await transporter.sendMail(mailOptions);
+res.json({ success: true });
+});
 
-  await transporter.sendMail({
-    from: `"Ison 3D Profile Update" <${process.env.BUSINESS_EMAIL}>`,
-    to: process.env.BUSINESS_EMAIL,
-    subject: "✏️ Profile Updated",
-    text: `
-PROFILE UPDATE
 
-Username: ${username}
-New Name: ${name}
-New Address: ${address}
-`
-  })
-
-  res.json({ success: true })
-})
-
-// ---------------- START SERVER ----------------
-app.listen(PORT, () => {
-  console.log("Ison 3D running on port " + PORT)
-})
+app.listen(10000, () => {
+console.log("Ison 3D running on port 10000");
+});
