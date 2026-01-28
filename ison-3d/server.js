@@ -39,14 +39,14 @@ const transporter = nodemailer.createTransport({
 // ORDER ROUTE
 app.post("/order", async (req, res) => {
   const orderText = `
-NEW ORDER RECEIVED
+NEW ISON 3D ORDER
 
-Name: ${req.body.name}
-Email: ${req.body.email}
 Item: ${req.body.item}
-Color(s): ${req.body.colors}
+Colors: ${req.body.colors}
 Quantity: ${req.body.quantity}
-Notes: ${req.body.notes}
+
+Notes:
+${req.body.notes}
 `
 
   try {
