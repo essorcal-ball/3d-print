@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Order Models | Ison 3D</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+
+<div class="topbar">
+<div class="logo">ISON 3D</div>
+<div id="userArea">
+<span id="username"></span>
+<button onclick="logout()">Logout</button>
+</div>
+</div>
+
+
+<div class="container fade">
+<h1>Order a 3D Model</h1>
+
+
+<div class="box">
+<input id="model" placeholder="Model Name">
+<input id="color" placeholder="Color">
+<textarea id="notes" placeholder="Extra notes..."></textarea>
+
+
+<button onclick="order()">Submit Order</button>
+</div>
+
+
+<div class="premium">
+<h2>Premium Ison 3D</h2>
+<p>Faster printing, priority support, and custom models.</p>
+</div>
+</div>
+
+
+<script src="app.js"></script>
+</body>
+</html>
