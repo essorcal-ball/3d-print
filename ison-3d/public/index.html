@@ -194,6 +194,17 @@
   </div>
 </div>
 
+  <div class="modal" id="profileModal">
+  <div class="modal-box">
+    <h3>Your Profile</h3>
+    <input id="profileName" placeholder="Real Name">
+    <input id="profileAddress" placeholder="Address">
+    <button onclick="saveProfile()">Save</button>
+    <button onclick="closeProfile()">Back</button>
+  </div>
+</div>
+
+
 <!-- INFO MODAL -->
 <div class="modal" id="infoModal">
   <div class="modal-box">
@@ -209,6 +220,8 @@
 let currentUser = null
 let mode = "login"
 
+const ADMIN_EMAIL = "yourbusinessemail@example.com"
+
 function openLogin() {
   document.getElementById("loginModal").style.display = "flex"
 }
@@ -221,33 +234,49 @@ function closeLogin() {
 function switchMode() {
   if (mode === "login") {
     mode = "register"
-    document.getElementById("modalTitle").innerText = "Create Account"
-    document.getElementById("realname").style.display = "block"
-    document.getElementById("address").style.display = "block"
-    document.getElementById("whyLink").style.display = "block"
-    document.getElementById("loginActionBtn").innerText = "Create Account"
+    modalTitle.innerText = "Create Account"
+    realname.style.display = "block"
+    address.style.display = "block"
+    whyLink.style.display = "block"
+    passwordHint.style.display = "block"
+    loginActionBtn.innerText = "Create Account"
   } else {
     mode = "login"
-    document.getElementById("modalTitle").innerText = "Login to continue"
-    document.getElementById("realname").style.display = "none"
-    document.getElementById("address").style.display = "none"
-    document.getElementById("whyLink").style.display = "none"
-    document.getElementById("loginActionBtn").innerText = "Login"
+    modalTitle.innerText = "Login to continue"
+    realname.style.display = "none"
+    address.style.display = "none"
+    whyLink.style.display = "none"
+    passwordHint.style.display = "none"
+    loginActionBtn.innerText = "Login"
   }
 }
 
 function whyInfo() {
-  document.getElementById("infoModal").style.display = "flex"
+  infoModal.style.display = "flex"
 }
 
 function closeInfo() {
-  document.getElementById("infoModal").style.display = "none"
+  infoModal.style.display = "none"
+}
+
+function validPassword(pass) {
+  return (
+    pass.length >= 8 &&
+    /[A-Z]/.test(pass) &&
+    /[0-9]/.test(pass)
+  )
 }
 
 async function login() {
-  const endpoint = mode === "login" ? "/login" : "/register"
+  if (mode === "register") {
+    if (!validPassword(password.value)) {
+      loginMsg.innerText =
+        "Password must be 8+ characters, include a number and a capital letter."
+      return
+    }
+  }
 
-  const res = await fetch(endpoint, {
+  const res = await fetch(mode === "login" ? "/login" : "/register", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -261,25 +290,80 @@ async function login() {
   const data = await res.json()
 
   if (data.success) {
-    currentUser = username.value
-    document.getElementById("userDisplay").innerText = currentUser
-    document.getElementById("loginBtn").style.display = "none"
-    document.getElementById("logoutBtn").style.display = "inline-block"
-    document.getElementById("orderSection").style.display = "block"
+    currentUser = {
+      name: realname.value || data.name,
+      address: address.value || data.address,
+      username: username.value
+    }
+
+    userDisplay.innerText = currentUser.username
+    loginBtn.style.display = "none"
+    logoutBtn.style.display = "inline-block"
+    orderSection.style.display = "block"
+    profileBtn.style.display = "inline-block"
     closeLogin()
   } else {
-    document.getElementById("loginMsg").innerText = data.message || "Action failed"
+    loginMsg.innerText = data.message || "Action failed"
   }
 }
 
 function logout() {
   currentUser = null
-  document.getElementById("userDisplay").innerText = ""
-  document.getElementById("loginBtn").style.display = "inline-block"
-  document.getElementById("logoutBtn").style.display = "none"
-  document.getElementById("orderSection").style.display = "none"
+  userDisplay.innerText = ""
+  loginBtn.style.display = "inline-block"
+  logoutBtn.style.display = "none"
+  profileBtn.style.display = "none"
+  orderSection.style.display = "none"
+}
+
+function openProfile() {
+  document.getElementById("profileModal").style.display = "flex"
+  document.getElementById("profileName").value = currentUser.name
+  document.getElementById("profileAddress").value = currentUser.address
+}
+
+function closeProfile() {
+  document.getElementById("profileModal").style.display = "none"
+}
+
+async function saveProfile() {
+  const name = profileName.value
+  const addr = profileAddress.value
+
+  await fetch("/update-profile", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      username: currentUser.username,
+      name,
+      address: addr
+    })
+  })
+
+  currentUser.name = name
+  currentUser.address = addr
+  closeProfile()
+  alert("Profile updated — Ison 3D has been notified")
+}
+
+async function submitOrder() {
+  const item = document.getElementById("itemName").value
+  const details = document.getElementById("itemDetails").value
+
+  await fetch("/order", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      user: currentUser,
+      item,
+      details
+    })
+  })
+
+  alert("Order sent to Ison 3D. You'll receive updates soon.")
 }
 </script>
+
 
 </body>
 </html>
